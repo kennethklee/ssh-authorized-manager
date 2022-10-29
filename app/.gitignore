@@ -1,0 +1,6 @@
+# runtime artifacts
+vendor/                                                                                                                   
+pb_data/
+static/
+tmp/
+ssham

@@ -1,0 +1,16 @@
+# Inherits docker-compose.yml
+
+services:
+  app:
+    image: sshauth:test
+    build:
+      context: .
+      args:
+        VERSION: ${VERSION}-test
+    networks:
+      - default
+    environment:
+      - APP_ENV=production
+      - APP_VERSION=${VERSION}-test
+    ports:
+      - '8090'

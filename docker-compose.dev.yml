@@ -1,0 +1,42 @@
+# Inherits docker-compose.yml
+
+services:
+  app:
+    image: sshauth:app
+    build:
+      context: .
+      target: gobuilder
+      args:
+        VERSION: ${VERSION}-dev
+    networks:
+      - default
+    ports:
+      - "${PORT:-3000}:8090"
+    volumes:
+      - ./app:/app
+      - ./web/dist:/app/static
+    environment:
+      - APP_ENV=development
+      - VERSION=${VERSION}-dev
+      - AUTO_VERIFY=1
+
+      # Header auth options
+      # When using header auth, visit /_ to create an admin user with the below email. the password doesn't matter
+      # Uncomment to test header auth and run with `./dev.sh up`
+      - AUTO_CREATE_USER=1
+      - FORCE_EMAIL=developer@ssham.io
+      - FORCE_NAME=Developer
+
+  web:
+    image: sshauth:web
+    build:
+      context: .
+      target: nodebuilder
+      args:
+        VERSION: ${VERSION}-dev
+    networks:
+      - default
+    volumes:
+      - ./web:/web
+    environment:
+      - APP_VERSION=${VERSION}-dev

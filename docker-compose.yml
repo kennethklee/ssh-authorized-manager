@@ -1,0 +1,23 @@
+version: '3.8'
+
+volumes:
+  data: {}
+
+services:
+  app:
+    image: kennethkl/sshauth:${VERSION:-latest}
+    build:
+      context: .
+      args:
+        VERSION: ${VERSION}
+    environment:
+      - APP_ENV=production
+      - AUTO_VERIFY
+
+      # Header auth options
+      - HEADER_AUTH_TRUSTED_PROXIES
+      - HEADER_AUTH_EMAIL
+      - HEADER_AUTH_NAME
+      - AUTO_CREATE_USER  # Create user if not exists
+    volumes:
+      - data:/app/pb_data
