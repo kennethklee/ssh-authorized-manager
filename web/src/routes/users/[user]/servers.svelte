@@ -7,6 +7,7 @@ import {
   ToolbarSearch,
   Link,
   Button,
+  InlineNotification
 } from 'carbon-components-svelte'
 import {onMount} from 'svelte'
 
@@ -21,6 +22,7 @@ const headers = [
 var allServers = []
 var userServers = []
 var selectedRowIds = []
+let saved = false
 
 
 
@@ -53,6 +55,9 @@ function handleSave(ev) {
   removedUserServers.forEach(us => {
     pb.records.delete('userServers', us.id, {$autoCancel: false})
   })
+
+  saved = true
+  setTimeout(() => saved = false, 1500)
 }
 
 // TODO add special options to particular servers
@@ -74,6 +79,10 @@ function handleSave(ev) {
       <Button on:click={handleSave}>Save</Button>
     </article>
   </nav>
+
+  {#if saved}
+    <InlineNotification kind="success" title="Saved" subtitle="Your changes have been saved." hideCloseButton />
+  {/if}
 
   <DataTable batchSelection bind:selectedRowIds sortable zebra title="Server Access" {headers} rows={allServers}>
     <svelte:fragment slot="cell" let:row let:cell>

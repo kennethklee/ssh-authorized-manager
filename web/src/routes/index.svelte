@@ -21,20 +21,9 @@
   .host {
     display: flex;
     flex-direction: row;
-  }
-  .host input {
-    flex: 1;
-  }
-
-  /* input[type=text] {
-    display: inline;
-    border: none;
-    background: none;
-    overflow: visible;
-  } */
-  .host {
     line-height: 40px;
   }
+
 </style>
 
 <!-- TODO quick links to recent items -->
