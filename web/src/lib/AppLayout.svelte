@@ -3,11 +3,11 @@
     Header,
     HeaderUtilities,
     HeaderAction,
-    HeaderActionLink,
     HeaderPanelLinks,
     HeaderPanelDivider,
     HeaderPanelLink,
     SideNav,
+    SideNavMenu,
     SideNavItems,
     SideNavLink,
     SideNavDivider,
@@ -76,17 +76,13 @@
     <!-- Admin -->
     {#if $user?.isAdmin}
     <SideNavDivider />
-    <SideNavLink text="Servers" href="/servers?all" />
-    <SideNavLink text="Users" href="/users" />
+    <SideNavMenu text="Manage" open>
+      <SideNavLink text="Servers" href="/servers?all" />
+      <SideNavLink text="Users" href="/users" />
+    </SideNavMenu>
     {/if}
   </SideNavItems>
 </SideNav>
 {/if}
 
 <slot />
-
-<!-- <pre style="float:right">
-  {JSON.stringify($user, null, 2)}
-
-  {isSideNavOpen}
-</pre> -->
