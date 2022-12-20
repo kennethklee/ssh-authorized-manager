@@ -25,10 +25,11 @@ func SaveServerLog(message ServerLog) error {
 	serverLogsCollection, _ := app.Dao().FindCollectionByNameOrId("serverLogs")
 
 	serverLog := models.NewRecord(serverLogsCollection)
-	serverLog.SetDataValue("serverId", message.serverId)
-	serverLog.SetDataValue("type", message.msgType)
-	serverLog.SetDataValue("message", message.message)
-	serverLog.SetDataValue("payload", message.payload)
+
+	serverLog.Set("serverId", message.serverId)
+	serverLog.Set("type", message.msgType)
+	serverLog.Set("message", message.message)
+	serverLog.Set("payload", message.payload)
 
 	return app.Dao().SaveRecord(serverLog)
 }
@@ -37,16 +38,16 @@ func CreateServerLog(serverRecord *models.Record, msgType string, message string
 	serverLogsCollection, _ := app.Dao().FindCollectionByNameOrId("serverLogs")
 
 	serverLog := models.NewRecord(serverLogsCollection)
-	serverLog.SetDataValue("serverId", serverRecord.Id)
-	serverLog.SetDataValue("type", msgType)
-	serverLog.SetDataValue("message", message)
-	serverLog.SetDataValue("payload", payload)
+	serverLog.Set("serverId", serverRecord.Id)
+	serverLog.Set("type", msgType)
+	serverLog.Set("message", message)
+	serverLog.Set("payload", payload)
 
 	if err := app.Dao().SaveRecord(serverLog); err != nil {
 		return err
 	}
 
-	serverRecord.SetDataValue("lastState", msgType)
+	serverRecord.Set("lastState", msgType)
 	app.Dao().SaveRecord(serverRecord)
 
 	event := &core.RecordCreateEvent{Record: serverLog}

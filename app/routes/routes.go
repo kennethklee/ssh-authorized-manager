@@ -23,9 +23,9 @@ func Register(router *echo.Echo) {
 
 	router.GET("/api/me", func(c echo.Context) error {
 		if c.Get(apis.ContextAdminKey) != nil {
-			return c.JSON(200, c.Get(apis.ContextAdminKey))
+			return c.JSON(200, c.Get("admin"))
 		} else {
-			return c.JSON(200, c.Get(apis.ContextUserKey))
+			return c.JSON(200, c.Get("user"))
 		}
 	})
 }

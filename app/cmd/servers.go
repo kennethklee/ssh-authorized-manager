@@ -30,7 +30,7 @@ func NewServersCommand(app core.App) *cobra.Command {
 			w := tabwriter.NewWriter(os.Stdout, 20, 8, 1, ' ', 0)
 			w.Write([]byte("Server ID\tName\tRemote Address\t\n"))
 			for _, server := range servers {
-				w.Write([]byte(fmt.Sprintf("%s\t%s\t%s\t\n", server.Id, server.GetStringDataValue("name"), server.GetStringDataValue("username")+"@"+server.GetStringDataValue("host"))))
+				w.Write([]byte(fmt.Sprintf("%s\t%s\t%s\t\n", server.Id, server.GetString("name"), server.GetString("username")+"@"+server.GetString("host"))))
 			}
 			w.Flush()
 		},
@@ -41,8 +41,7 @@ func NewServersCommand(app core.App) *cobra.Command {
 		Short: "Sync authorized_keys to server",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			serverCollection, _ := app.Dao().FindCollectionByNameOrId("servers")
-			server, err := app.Dao().FindRecordById(serverCollection, args[0], nil)
+			server, err := app.Dao().FindRecordById("servers", args[0], nil)
 			if err != nil {
 				cmd.PrintErrln("Error:", err)
 				cmd.Help()

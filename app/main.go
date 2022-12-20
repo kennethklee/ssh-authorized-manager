@@ -1,20 +1,17 @@
 package main
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
-	"log"
 	"os"
-	"time"
 
-	"sshauthman/api/auth"
-	"sshauthman/api/routes"
+	// "sshauthman/api/auth"
 	"sshauthman/cmd"
 	_ "sshauthman/migrations"
+	"sshauthman/routes"
 	"sshauthman/worker"
 
 	"github.com/fatih/color"
+	auth "github.com/kennethklee/pb-auth"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -37,12 +34,12 @@ func main() {
 
 		// Debug
 		// e.App.DB().LogFunc = log.Printf
-		e.App.DB().QueryLogFunc = func(ctx context.Context, t time.Duration, sql string, rows *sql.Rows, err error) {
-			log.Printf("[%.2fms] Query SQL: %v", float64(t.Milliseconds()), sql)
-		}
-		e.App.DB().ExecLogFunc = func(ctx context.Context, t time.Duration, sql string, result sql.Result, err error) {
-			log.Printf("[%.2fms] Execute SQL: %v", float64(t.Milliseconds()), sql)
-		}
+		// e.App.DB().QueryLogFunc = func(ctx context.Context, t time.Duration, sql string, rows *sql.Rows, err error) {
+		// 	log.Printf("[%.2fms] Query SQL: %v", float64(t.Milliseconds()), sql)
+		// }
+		// e.App.DB().ExecLogFunc = func(ctx context.Context, t time.Duration, sql string, result sql.Result, err error) {
+		// 	log.Printf("[%.2fms] Execute SQL: %v", float64(t.Milliseconds()), sql)
+		// }
 
 		return nil
 	})

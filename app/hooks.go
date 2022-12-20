@@ -23,8 +23,10 @@ func HooksConfigFromEnv() HooksConfig {
 func RegisterHooks(app core.App, config HooksConfig) {
 	// auto verify feature flag
 	if config.AutoVerifyUser {
-		app.OnUserBeforeCreateRequest().Add(func(e *core.UserCreateEvent) error {
-			e.User.Verified = true
+		app.OnRecordBeforeCreateRequest().Add(func(e *core.RecordCreateEvent) error {
+			if e.Record.Collection().Name == "users" {
+				e.Record.SetVerified(true)
+			}
 			return nil
 		})
 	}
@@ -50,7 +52,7 @@ func syncServerHookHandler(action string, dao *daos.Dao, r *models.Record) error
 	}
 	if r.Collection().Name == "publicKeys" {
 		// find all servers that need this public key updated
-		servers, err := collectServersByUserID(dao, r.GetStringDataValue("userId"))
+		servers, err := collectServersByUserID(dao, r.GetString("userId"))
 		if err != nil {
 			return err
 		}
@@ -60,10 +62,8 @@ func syncServerHookHandler(action string, dao *daos.Dao, r *models.Record) error
 		}
 	}
 	if r.Collection().Name == "userServers" {
-		serverCollection, _ := dao.FindCollectionByNameOrId("servers")
-
 		// fetch server
-		server, _ := dao.FindRecordById(serverCollection, r.GetStringDataValue("serverId"), nil)
+		server, _ := dao.FindRecordById("servers", r.GetString("serverId"), nil)
 		worker.SubmitAndForget(&worker.SyncServerWork{Server: server})
 	}
 
@@ -71,26 +71,17 @@ func syncServerHookHandler(action string, dao *daos.Dao, r *models.Record) error
 }
 
 func collectServersByUserID(dao *daos.Dao, userId string) ([]*models.Record, error) {
-	userServerCollection, err := dao.FindCollectionByNameOrId("userServers")
-	if err != nil {
-		return nil, err
-	}
-	serverCollection, err := dao.FindCollectionByNameOrId("servers")
-	if err != nil {
-		return nil, err
-	}
-
-	userServers, err := dao.FindRecordsByExpr(userServerCollection, &dbx.HashExp{"userId": userId})
+	userServers, err := dao.FindRecordsByExpr("userServers", &dbx.HashExp{"userId": userId})
 	if err != nil {
 		return nil, err
 	}
 
 	var serverIds = []interface{}{}
 	for _, userServer := range userServers {
-		serverIds = append(serverIds, userServer.GetStringDataValue("serverId"))
+		serverIds = append(serverIds, userServer.GetString("serverId"))
 	}
 
-	servers, err := dao.FindRecordsByExpr(serverCollection, dbx.In("id", serverIds...))
+	servers, err := dao.FindRecordsByExpr("servers", dbx.In("id", serverIds...))
 	if err != nil {
 		return nil, err
 	}

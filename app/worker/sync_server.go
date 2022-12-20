@@ -45,17 +45,17 @@ type SyncServerWork struct {
 }
 
 func (work *SyncServerWork) Name() string {
-	return "Sync Server - " + work.Server.GetStringDataValue("name")
+	return "Sync Server - " + work.Server.GetString("name")
 }
 
 func (work *SyncServerWork) Execute() error {
 	// Prepare auth
 	var auth goph.Auth
-	if work.Server.GetBoolDataValue("usePassword") {
-		auth = goph.Password(work.Server.GetStringDataValue("#password"))
+	if work.Server.GetBool("usePassword") {
+		auth = goph.Password(work.Server.GetString("#password"))
 	} else {
 		var err error
-		auth, err = goph.Key(work.Server.GetStringDataValue("#privateKey"), work.Server.GetStringDataValue("#privateKeyPassphrase"))
+		auth, err = goph.Key(work.Server.GetString("#privateKey"), work.Server.GetString("#privateKeyPassphrase"))
 		if err != nil {
 			CreateServerLog(work.Server, "error", "Failed to load private key. Passphrase may be incorrect.", err.Error())
 			return err
@@ -64,9 +64,9 @@ func (work *SyncServerWork) Execute() error {
 
 	// Prepare client and verify host key
 	client, err := goph.NewConn(&goph.Config{
-		User:     work.Server.GetStringDataValue("username"),
-		Addr:     work.Server.GetStringDataValue("host"),
-		Port:     uint(work.Server.GetIntDataValue("port")),
+		User:     work.Server.GetString("username"),
+		Addr:     work.Server.GetString("host"),
+		Port:     uint(work.Server.GetInt("port")),
 		Auth:     auth,
 		Callback: verifyHostKey(work),
 	})
@@ -78,18 +78,18 @@ func (work *SyncServerWork) Execute() error {
 		return err
 	}
 	defer client.Close()
-	fmt.Println("[WORKER] Connected to", work.Server.GetStringDataValue("name"))
+	fmt.Println("[WORKER] Connected to", work.Server.GetString("name"))
 
 	// Verify hostname
-	if work.Server.GetStringDataValue("hostname") != "" {
-		if _, err := verifyServerHostname(client, work.Server.GetStringDataValue("hostname")); err != nil {
+	if work.Server.GetString("hostname") != "" {
+		if _, err := verifyServerHostname(client, work.Server.GetString("hostname")); err != nil {
 			CreateServerLog(work.Server, "error", "Failed to verify hostname. Possible port redirection.", err.Error())
 			return err
 		}
-		fmt.Println("[WORKER] Verified hostname", work.Server.GetStringDataValue("hostname"))
+		fmt.Println("[WORKER] Verified hostname", work.Server.GetString("hostname"))
 	} else {
 		// hostname is unknown, ask to if hostname is trusted
-		hostname, _ := verifyServerHostname(client, work.Server.GetStringDataValue("hostname"))
+		hostname, _ := verifyServerHostname(client, work.Server.GetString("hostname"))
 		msg := fmt.Sprintf("Hostname does not match, do you trust this server?\nHostname: %s", hostname)
 		CreateServerLog(work.Server, "hostName", msg, hostname)
 		return fmt.Errorf("ssh: required hostname is not known")
@@ -140,7 +140,7 @@ func parsePublicKey(hostKey string) (ssh.PublicKey, error) {
 
 func verifyHostKey(work *SyncServerWork) ssh.HostKeyCallback {
 	return func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-		hostKeyString := work.Server.GetStringDataValue("hostKey")
+		hostKeyString := work.Server.GetString("hostKey")
 		if hostKeyString != "" {
 			var err error
 			hostKey, err := parsePublicKey(hostKeyString)
@@ -190,17 +190,8 @@ func verifyServerHostname(client *goph.Client, hostname string) (string, error) 
 }
 
 func collectAuthorizedKeys(dao *daos.Dao, server *models.Record) (authorizedKeys []AuthorizedKey, err error) {
-	userServersCollection, err := dao.FindCollectionByNameOrId("userServers")
-	if err != nil {
-		return
-	}
-	publicKeysCollection, err := dao.FindCollectionByNameOrId("publicKeys")
-	if err != nil {
-		return
-	}
-
 	// collect direct users associated with this server
-	userServersRecords, err := dao.FindRecordsByExpr(userServersCollection, &dbx.HashExp{"serverId": server.Id})
+	userServersRecords, err := dao.FindRecordsByExpr("userServers", &dbx.HashExp{"serverId": server.Id})
 	if err != nil {
 		err = fmt.Errorf("failed to find userServers records: %s", err.Error())
 		return
@@ -209,12 +200,12 @@ func collectAuthorizedKeys(dao *daos.Dao, server *models.Record) (authorizedKeys
 	userIds := []interface{}{}
 	userOptionsMap := map[string]string{}
 	for _, usersServer := range userServersRecords {
-		userIds = append(userIds, usersServer.GetStringDataValue("userId"))
-		userOptionsMap[usersServer.GetStringDataValue("userId")] = usersServer.GetStringDataValue("options")
+		userIds = append(userIds, usersServer.GetString("userId"))
+		userOptionsMap[usersServer.GetString("userId")] = usersServer.GetString("options")
 	}
 
 	// collect public keys associated with users
-	publicKeys, err := dao.FindRecordsByExpr(publicKeysCollection, dbx.In("userId", userIds...))
+	publicKeys, err := dao.FindRecordsByExpr("publicKeys", dbx.In("userId", userIds...))
 	if err != nil {
 		err = fmt.Errorf("failed to find publicKeys records: %s", err.Error())
 		return
@@ -222,16 +213,16 @@ func collectAuthorizedKeys(dao *daos.Dao, server *models.Record) (authorizedKeys
 
 	authorizedKeys = []AuthorizedKey{}
 	for _, publicKey := range publicKeys {
-		key, err := parsePublicKey(publicKey.GetStringDataValue("publicKey"))
+		key, err := parsePublicKey(publicKey.GetString("publicKey"))
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse public key: %s", err.Error())
 		}
 
 		authorizedKeys = append(authorizedKeys, AuthorizedKey{
-			Options: userOptionsMap[publicKey.GetStringDataValue("userId")],
+			Options: userOptionsMap[publicKey.GetString("userId")],
 			Type:    key.Type(),
 			Key:     key,
-			Comment: publicKey.GetStringDataValue("comment"),
+			Comment: publicKey.GetString("comment"),
 		})
 	}
 
