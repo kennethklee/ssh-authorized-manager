@@ -12,12 +12,12 @@ services:
         VERSION: ${VERSION}
     environment:
       - APP_ENV=production
-      - AUTO_VERIFY
 
       # Header auth options
       - HEADER_AUTH_TRUSTED_PROXIES
       - HEADER_AUTH_EMAIL
       - HEADER_AUTH_NAME
       - AUTO_CREATE_USER  # Create user if not exists
+      - AUTO_VERIFY # Set user to verified when created
     volumes:
       - data:/app/pb_data
