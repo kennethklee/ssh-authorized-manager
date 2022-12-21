@@ -34,7 +34,7 @@
   </header>
 
   <article class="grid">
-    {#await pb.records.getList('servers', 1, 8, {sort: '-updated', filter: 'lastState="info"'})}
+    {#await pb.collection('servers').getList(1, 8, {sort: '-updated', filter: 'lastState="info"'})}
       <SkeletonPlaceholder style="width: auto" />
       <SkeletonPlaceholder style="width: auto" />
       <SkeletonPlaceholder style="width: auto" />

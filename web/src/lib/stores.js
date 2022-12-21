@@ -6,9 +6,8 @@ export const params = writable({})      // url params i.e. `server` in /servers/
 export const query = writable(new URLSearchParams())       // url query i.e. `q` in /search?q=foo
 
 export const user = writable(null, function (set) {
-  console.log('user store init')
   pb.authStore.model && getUserModel(pb.authStore.model).then(set)
-  pb.authStore.onChange(async (_, model) => set(await getUserModel(model)))
+  pb.authStore.onChange(async (_, model) => console.log('auth change', set(await getUserModel(model))))
 
   return () => { }
 })
@@ -21,7 +20,7 @@ async function getUserModel(model) {
   }
 
   // admin needs a user, so fetch
-  var users = await pb.users.getList(1, 1, { filter: `email="${model.email}"` })
+  var users = await pb.collection('users').getList(1, 1, { filter: `email="${model.email}"` })
   if (users.items.length) {
     // user exists
     users.items[0].isAdmin = true

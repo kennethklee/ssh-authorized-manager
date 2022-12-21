@@ -27,6 +27,7 @@
       .then(res => res.json())
       .then(data => {
         if (data) {
+          login(email, password)
           routeTo('/')
         }
       })
@@ -34,15 +35,19 @@
 
   function handleLogin(ev) {
     ev.preventDefault()
+    login(email, password)
+  }
+
+  function login(user, passwd) {
     notify = ''
 
     // check if admin
     var redirectPath = localStorage.getItem('redirectTo') ? localStorage.getItem('redirectTo') : '/'
-    pb.admins.authViaEmail(email, password)
+    pb.admins.authWithPassword(user, passwd)
       .then(() => routeTo(redirectPath))
       .catch(() => {
         // check if user
-        return pb.users.authViaEmail(email, password)
+        return pb.collection('users').authWithPassword(user, passwd)
       })
       .then(() => routeTo(redirectPath))
       .catch(err => {
@@ -53,7 +58,7 @@
 
 <Content>
   {#if notify}
-  <InlineNotification {...notify} />
+    <InlineNotification {...notify} />
   {/if}
 
   <Grid>

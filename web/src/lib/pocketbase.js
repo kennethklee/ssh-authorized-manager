@@ -18,11 +18,11 @@ client.afterSend = function (response, data) {
  * @param collectionName {string}
  * @param record {object}
  */
-client.records.save = function (collectionName, record) {
+client.save = function (collectionName, record) {
   if (record.id) {
-    return client.records.update(collectionName, record.id, record)
+    return client.collection(collectionName).update(record.id, record)
   } else {
-    return client.records.create(collectionName, record)
+    return client.collection(collectionName).create(record)
   }
 }
 

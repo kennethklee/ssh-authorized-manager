@@ -4,8 +4,8 @@
  * @returns {string} Formatted date time string YYYY-MM-DDTHH:MM:SS.sssZ
  */
 export function formatDateTime(datetime) {
-  // converts YYYY-MM-DD HH:MM:SS.sss to YYYY-MM-DDTHH:MM:SS.sssZ
-  return datetime.trim().replace(' ', 'T') + 'Z'
+  // converts YYYY-MM-DD HH:MM:SS.sssZ to YYYY-MM-DDTHH:MM:SS.sssZ
+  return datetime.trim().replace(' ', 'T')
 }
 
 export function sshTarget(server) {

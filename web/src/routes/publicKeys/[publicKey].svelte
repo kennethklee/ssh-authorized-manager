@@ -35,12 +35,15 @@ function handleSave(ev) {
   publicKey.userId = publicKey.userId || $user.id
 
   // @ts-ignore
-  pb.records.save('publicKeys', publicKey)
+  pb.save('publicKeys', publicKey)
     .then(data => {
       publicKey = data
       isSaving = false
       notify = {kind: 'success', title: 'Saved', message: 'Public key saved'}
+
+      routeTo(`/publicKeys/${publicKey.id}`)
     })
+    // TODO handle validation errors
     .catch(err => notify = {kind: 'error', title: 'Error', subtitle: err.message})
     .finally(() => isSaving = false)
 }
@@ -61,7 +64,7 @@ function handlePublicKeyChange(ev) {
 }
 
 function deletePublicKey(id) {
-  pb.records.delete('publicKeys', id)
+  pb.collection('publicKeys').delete(id)
     .then(() => routeTo('/publicKeys'))
     .catch(err => notify = {kind: 'error', title: 'Error', subtitle: err.message})
 }

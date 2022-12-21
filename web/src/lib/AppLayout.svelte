@@ -75,11 +75,11 @@
 
     <!-- Admin -->
     {#if $user?.isAdmin}
-    <SideNavDivider />
-    <SideNavMenu text="Manage" open>
-      <SideNavLink text="Servers" href="/servers?all" />
-      <SideNavLink text="Users" href="/users" />
-    </SideNavMenu>
+      <SideNavDivider />
+      <SideNavMenu text="Manage" open>
+        <SideNavLink text="Servers" href="/servers?all" />
+        <SideNavLink text="Users" href="/users" />
+      </SideNavMenu>
     {/if}
   </SideNavItems>
 </SideNav>

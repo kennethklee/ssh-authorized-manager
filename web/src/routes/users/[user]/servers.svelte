@@ -30,11 +30,11 @@ onMount(() => refresh())
 
 function refresh(query) {
   /** @type {any} */
-  pb.records.getFullList('servers', 200)
+  pb.collection('servers').getFullList(200)
     .then(items => {
       allServers = items
 
-      pb.records.getFullList('userServers', 200, {filter: `userId="${user.id}"`})
+      pb.collection('userServers').getFullList(200, {filter: `userId="${user.id}"`})
         .then(items => {
           userServers = items
           selectedRowIds = items.map(us => us.serverId)
@@ -49,11 +49,11 @@ function handleSave(ev) {
 
   // add new user servers
   addedServerIds.forEach(id => {
-    pb.records.create('userServers', {userId: user.id, serverId: id}, {$autoCancel: false})
+    pb.collection('userServers').create({userId: user.id, serverId: id}, {$autoCancel: false})
   })
   // remove old user servers
   removedUserServers.forEach(us => {
-    pb.records.delete('userServers', us.id, {$autoCancel: false})
+    pb.collection('userServers').delete(us.id, {$autoCancel: false})
   })
 
   saved = true

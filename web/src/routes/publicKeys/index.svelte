@@ -24,7 +24,7 @@ document.title = 'Public Keys | SSH Authorized Manager'
 </script>
 
 <Content>
-  {#await pb.records.getFullList('publicKeys', 200)}
+  {#await pb.collection('publicKeys').getFullList(200)}
     <DataTableSkeleton />
   {:then items}
     <DataTable zebra title="My Public Keys" {headers} rows={items}>

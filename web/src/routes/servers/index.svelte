@@ -42,7 +42,7 @@ function refresh(query) {
   var options = {}
   if ($user.isAdmin && !query.has('all')) options = {filter: `@collection.userServers.userId="${$user.id}" && @collection.userServers.serverId=id`}
 
-  pb.records.getFullList('servers', 200, options)
+  pb.collection('servers').getFullList(200, options)
     .then(items => {
       servers = items
 
@@ -59,7 +59,7 @@ function refresh(query) {
 }
 
 function fetchLastServerLog(id) {
-  return pb.records.getList('serverLogs', 1, 1, {filter: `serverId='${id}'`, sort: '-created', $autoCancel: false})
+  return pb.collection('serverLogs').getList(1, 1, {filter: `serverId='${id}'`, sort: '-created', $autoCancel: false})
     .then(data => data.items[0])
 }
 

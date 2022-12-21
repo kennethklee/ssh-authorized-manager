@@ -9,6 +9,7 @@ import {
   ToolbarContent,
   Button,
 } from 'carbon-components-svelte'
+import * as timeago from 'timeago.js'
 import Repeat from 'carbon-icons-svelte/lib/Repeat.svelte'
 import pb from '$lib/pocketbase.js'
 import {formatDateTime} from '$lib/utils.js'
@@ -16,6 +17,7 @@ import {formatDateTime} from '$lib/utils.js'
 
 export var server = {port: 22, usePassword: true}
 const headers = [
+  {key: 'ago', empty: true, width: '150px'},
   {key: 'created', value: 'Date', width: '200px'},
   {key: 'type', value: 'Type', width: '100px'},
   {key: 'message', value: 'Message'},
@@ -44,7 +46,7 @@ onDestroy(() => {
 })
 
 function refresh() {
-  pb.records.getList('serverLogs', 1, 200, {sort: '-created', filter: `serverId="${server.id}"`})
+  pb.collection('serverLogs').getList(1, 200, {sort: '-created', filter: `serverId="${server.id}"`})
     .then(data => logs = data.items)
 }
 
@@ -61,21 +63,21 @@ function handleDetailsTransition(ev) {
 
 function deleteMessage(id) {
   isDetailsOpen = false
-  pb.records.delete('serverLogs', id)
+  pb.collection('serverLogs').delete(id)
 }
 
 function deletePastMessages() {
   // delete all messages except the last one
-  logs.slice(1).forEach(l => pb.records.delete('serverLogs', l.id))
+  logs.slice(1).forEach(l => pb.collection('serverLogs').delete(l.id))
 }
 
 function trustHostKey() {
-  pb.records.update('servers', server.id, {hostKey: details.payload})
+  pb.collection('servers').update(server.id, {hostKey: details.payload})
   deleteMessage(details.id)
 }
 
 function trustHostName() {
-  pb.records.update('servers', server.id, {hostname: details.payload})
+  pb.collection('servers').update(server.id, {hostname: details.payload})
   deleteMessage(details.id)
 }
 </script>
@@ -107,6 +109,8 @@ function trustHostName() {
     <svelte:fragment slot="cell" let:row let:cell>
       {#if cell.key === "message"}
         {cell.value}
+      {:else if cell.key === "ago"}
+        <time datetime={formatDateTime(row.created)}>{timeago.format(new Date(formatDateTime(row.created)))}</time>
       {:else if cell.key === "created"}
         <time datetime={formatDateTime(cell.value)}>{new Date(formatDateTime(cell.value)).toLocaleString()}</time>
       {:else if cell.key === "actions"}

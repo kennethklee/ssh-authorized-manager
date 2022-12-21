@@ -27,7 +27,7 @@ var users = []
 onMount(() => refresh())
 
 async function refresh() {
-  users = await pb.users.getFullList(200, {$autoCancel: false})
+  users = await pb.collection('users').getFullList(200, {$autoCancel: false})
 }
 </script>
 

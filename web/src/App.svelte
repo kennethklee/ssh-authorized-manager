@@ -55,7 +55,7 @@ Object.keys(pageComponentMap).forEach(pageComponentKey => {
       if (part === ':user') {
         chainCallbacks.push(async (ctx, next) => {
           console.debug('load user', ctx.params.user)
-          pb.users.getOne(ctx.params.user)
+          pb.collection('users').getOne(ctx.params.user)
             .then(data => pageArgs.user = data)
             .then(next)
             .catch(goto404)
@@ -66,7 +66,7 @@ Object.keys(pageComponentMap).forEach(pageComponentKey => {
         chainCallbacks.push(async (ctx, next) => {
           if (ctx.params[param] === 'new') return next();
           console.debug('load', param, ctx.params[param])
-          pb.records.getOne(collectionName, ctx.params[param])
+          pb.collection(collectionName).getOne(ctx.params[param])
             .then(data => pageArgs[param] = data)
             .then(next)
             .catch(goto404)
@@ -79,6 +79,7 @@ Object.keys(pageComponentMap).forEach(pageComponentKey => {
     }
   }
 
+  // @ts-ignore
   chainCallbacks.push(ctx => pageComponent = pageComponentMap[pageComponentKey].default)
   router('/' + routeParts.join('/'), ...chainCallbacks)
   // console.log('/' + routeParts.join('/'))   // uncomment to show all routes
@@ -101,9 +102,9 @@ onMount(() => {
         if (data) {
           // Login to refresh authStore with JWT token (pocketbase SDK needs this)
           if (data.profile) {
-            pb.users.authViaEmail('dontmatter', 'dontcare')
+            pb.collection('user').authWithPassword('dontmatter', 'dontcare')
           } else {
-            pb.admins.authViaEmail('dontmatter', 'dontcare')
+            pb.admins.authWithPassword('dontmatter', 'dontcare')
           }
           router.start()
         } else {

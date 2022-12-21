@@ -46,7 +46,7 @@ function handleSave(ev) {
   }
 
   // @ts-ignore
-  pb.records.save('servers', server)
+  pb.save('servers', server)
     .then(data => {
       server = data
       title = server.name
@@ -67,7 +67,7 @@ function handleSave(ev) {
 
 function deleteServer(id) {
   isConfirmDelete = false
-  pb.records.delete('servers', id)
+  pb.collection('servers').delete(id)
     .then(() => routeTo('/servers'))
 }
 </script>
