@@ -13,11 +13,10 @@ services:
     environment:
       - APP_ENV=production
 
-      # Header auth options
-      - HEADER_AUTH_TRUSTED_PROXIES
-      - HEADER_AUTH_EMAIL
-      - HEADER_AUTH_NAME
+      # Header auth options. Do not set if you don't want to use header auth
+      - HEADER_AUTH_EMAIL # Email header
+      - HEADER_AUTH_NAME  # Name header
+      - HEADER_AUTH_USERNAME # Username header
       - AUTO_CREATE_USER  # Create user if not exists
-      - AUTO_VERIFY # Set user to verified when created
     volumes:
       - data:/app/pb_data

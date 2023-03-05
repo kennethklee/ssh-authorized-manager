@@ -35,7 +35,7 @@ RUN CGO_ENABLED=0 go build -ldflags "-s -w -X main.Version=${VERSION}" -o ssham
 
 # development mode
 EXPOSE 8090
-HEALTHCHECK --start-period=5s --retries=2 CMD wget --no-verbose --tries=1 --spider 0:8090
+HEALTHCHECK --start-period=5s --retries=2 CMD wget --no-verbose --tries=1 --spider 0:8090/api/me
 CMD ["/go/bin/air", "-c", "/app/air.toml"]
 
 

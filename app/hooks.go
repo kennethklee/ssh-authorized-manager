@@ -21,16 +21,6 @@ func HooksConfigFromEnv() HooksConfig {
 }
 
 func RegisterHooks(app core.App, config HooksConfig) {
-	// auto verify feature flag
-	if config.AutoVerifyUser {
-		app.OnRecordBeforeCreateRequest().Add(func(e *core.RecordCreateEvent) error {
-			if e.Record.Collection().Name == "users" {
-				e.Record.SetVerified(true)
-			}
-			return nil
-		})
-	}
-
 	app.OnRecordAfterCreateRequest().Add(func(e *core.RecordCreateEvent) error {
 		return syncServerHookHandler("create", app.Dao(), e.Record)
 	})

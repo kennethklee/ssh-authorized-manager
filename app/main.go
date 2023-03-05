@@ -26,6 +26,8 @@ func main() {
 		bold := color.New(color.Bold).Add(color.FgGreen)
 		bold.Println("> Config")
 
+		authConfig := auth.HeaderAuthConfigFromEnv()
+		authConfig.AdminLogin = true // Need this to manage users & servers
 		auth.InstallHeaderAuth(e.App, e.Router, auth.HeaderAuthConfigFromEnv())
 		routes.Register(e.Router)
 		RegisterHooks(e.App, HooksConfigFromEnv())

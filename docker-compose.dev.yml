@@ -18,14 +18,13 @@ services:
     environment:
       - APP_ENV=development
       - VERSION=${VERSION}-dev
-      - AUTO_VERIFY=1
 
       # Header auth options
       # When using header auth, visit /_ to create an admin user with the below email. the password doesn't matter
       # Uncomment to test header auth and run with `./dev.sh up`
-      - AUTO_CREATE_USER=1
-      - FORCE_EMAIL=developer@ssham.io
-      - FORCE_NAME=Developer
+      # - AUTO_CREATE_USER=1
+      # - FORCE_EMAIL=developer@ssham.io
+      # - FORCE_NAME=Developer
 
   web:
     image: sshauth:web
