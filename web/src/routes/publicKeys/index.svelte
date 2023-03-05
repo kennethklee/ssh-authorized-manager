@@ -16,7 +16,8 @@ import {formatDateTime} from '$lib/utils.js'
 
 
 const headers = [
-  {key: 'name', value: 'Name'},
+  {key: 'comment', value: 'Name'},
+  {key: 'created', value: 'Created'},
   {key: 'updated', value: 'Last Updated'},
   {key: 'actions', empty: true, width: '60px'},
 ]
@@ -29,9 +30,9 @@ document.title = 'Public Keys | SSH Authorized Manager'
   {:then items}
     <DataTable zebra title="My Public Keys" {headers} rows={items}>
       <svelte:fragment slot="cell" let:row let:cell>
-        {#if cell.key === "name"}
+        {#if cell.key === "comment"}
           <Link href={'/publicKeys/' + row.id}>{cell.value || (row.publicKey.slice(0, 10) + '...')}</Link>
-        {:else if cell.key === "updated"}
+        {:else if cell.key === "updated" || cell.key === "created"}
           <time datetime={formatDateTime(cell.value)}>{new Date(formatDateTime(cell.value)).toLocaleString()}</time>
         {:else if cell.key === "actions"}
           <OverflowMenu flipped>

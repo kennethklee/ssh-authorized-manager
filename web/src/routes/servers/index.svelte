@@ -68,7 +68,7 @@ function fetchLastServerLog(id) {
 <Content>
   <DataTable zebra title={$query.has('all') ? 'Servers' : 'My Servers'} {headers} rows={servers}>
     <svelte:fragment slot="cell" let:row let:cell>
-      {#if cell.key === "name"}
+      {#if cell.key === "name" && !$user.isUser}
         <Link href={'/servers/' + row.id}>{cell.value}</Link>
       {:else if cell.key === "remote"}
         <CopyButton text={sshTarget(row)} /> {sshTarget(row)}

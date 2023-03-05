@@ -43,46 +43,46 @@
 
   <HeaderUtilities>
     {#if $user}
-    <span>{$user.name || $user.email}</span>
-    <HeaderAction bind:isOpen={isOpen1} icon={UserAvatarFilledAlt} closeIcon={UserAvatarFilledAlt}>
-      <HeaderPanelLinks>
-        <HeaderPanelDivider>Account</HeaderPanelDivider>
-        <li>{$user?.profile ? $user.profile.name : $user?.email}</li>
-        <HeaderPanelLink on:click={handleLogOut}>Log Out</HeaderPanelLink>
+      <span>{$user.name || $user.email}</span>
+      <HeaderAction bind:isOpen={isOpen1} icon={UserAvatarFilledAlt} closeIcon={UserAvatarFilledAlt}>
+        <HeaderPanelLinks>
+          <HeaderPanelDivider>Account</HeaderPanelDivider>
+          <li>{$user.name || $user.email}</li>
+          <HeaderPanelLink on:click={handleLogOut}>Log Out</HeaderPanelLink>
 
-        {#if $user?.isAdmin}
-        <HeaderPanelDivider>Admin</HeaderPanelDivider>
-        <HeaderPanelLink href="/_" target="_blank">Dashboard</HeaderPanelLink>
-        {/if}
+          {#if $user?.isAdmin}
+            <HeaderPanelDivider>Admin</HeaderPanelDivider>
+            <HeaderPanelLink href="/_" target="_blank">Dashboard</HeaderPanelLink>
+          {/if}
 
-        <HeaderPanelDivider>Version</HeaderPanelDivider>
-        <HeaderPanelLink>{import.meta.env.APP_VERSION}</HeaderPanelLink>
-      </HeaderPanelLinks>
-    </HeaderAction>
+          <HeaderPanelDivider>Version</HeaderPanelDivider>
+          <HeaderPanelLink>{import.meta.env.APP_VERSION}</HeaderPanelLink>
+        </HeaderPanelLinks>
+      </HeaderAction>
     {/if}
   </HeaderUtilities>
 </Header>
 
 {#if $user}
-<SideNav bind:isOpen={isSideNavOpen}>
-  <SideNavItems>
-    {#if $user?.isUser}
-    <SideNavLink text="My Public Keys" href="/publicKeys" />
-    <SideNavLink text="My Servers" href="/servers" />
-    {:else}
-    <p>To save your public keys and servers, <a href="/_/#/users">create a user for yourself</a>.</p>
-    {/if}
+  <SideNav bind:isOpen={isSideNavOpen}>
+    <SideNavItems>
+      {#if $user?.isUser}
+        <SideNavLink text="My Public Keys" href="/publicKeys" />
+        <SideNavLink text="My Servers" href="/servers" />
+      {:else}
+        <li>To save your public keys and servers, <a href="/_/#/users">create a user for yourself</a>.</li>
+      {/if}
 
-    <!-- Admin -->
-    {#if $user?.isAdmin}
-      <SideNavDivider />
-      <SideNavMenu text="Manage" open>
-        <SideNavLink text="Servers" href="/servers?all" />
-        <SideNavLink text="Users" href="/users" />
-      </SideNavMenu>
-    {/if}
-  </SideNavItems>
-</SideNav>
+      <!-- Admin -->
+      {#if $user?.isAdmin}
+        <SideNavDivider />
+        <SideNavMenu text="Manage" open>
+          <SideNavLink text="Servers" href="/servers?all" />
+          <SideNavLink text="Users" href="/users" />
+        </SideNavMenu>
+      {/if}
+    </SideNavItems>
+  </SideNav>
 {/if}
 
 <slot />

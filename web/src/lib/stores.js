@@ -14,9 +14,9 @@ export const user = writable(null, function (set) {
 
 async function getUserModel(model) {
   if (!model || !model.id) return null; // logged out
-  if (!('avatar' in model)) {
+  if ('collectionName' in model) {
     model.isUser = true
-    return model; // logged in as normal user (users don't have an avatar)
+    return model; // logged in as normal user
   }
 
   // admin needs a user, so fetch

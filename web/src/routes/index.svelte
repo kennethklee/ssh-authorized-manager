@@ -23,7 +23,6 @@
     flex-direction: row;
     line-height: 40px;
   }
-
 </style>
 
 <!-- TODO quick links to recent items -->

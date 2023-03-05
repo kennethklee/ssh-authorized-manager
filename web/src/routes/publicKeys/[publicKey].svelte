@@ -69,6 +69,7 @@ function deletePublicKey(id) {
     .catch(err => notify = {kind: 'error', title: 'Error', subtitle: err.message})
 }
 </script>
+
 <style>
   nav {
     display: flex;
