@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	// "sshauthman/api/auth"
-	"sshauthman/cmd"
-	_ "sshauthman/migrations"
-	"sshauthman/routes"
-	"sshauthman/worker"
+	// "github.com/kennethklee/ssh-authorized-manager/app/api/auth"
+	"github.com/kennethklee/ssh-authorized-manager/app/cmd"
+	_ "github.com/kennethklee/ssh-authorized-manager/app/migrations"
+	"github.com/kennethklee/ssh-authorized-manager/app/routes"
+	"github.com/kennethklee/ssh-authorized-manager/app/worker"
 
 	"github.com/fatih/color"
 	auth "github.com/kennethklee/pb-auth"
@@ -20,6 +20,10 @@ var ProgramName = "SSH Authorized Manager"
 var Version = "dev"
 
 func main() {
+	Main()
+}
+
+func Main() {
 	var app = pocketbase.New()
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		fmt.Println(ProgramName, Version)
@@ -51,6 +55,7 @@ func main() {
 	app.RootCmd.Version = Version
 	app.RootCmd.AddCommand(cmd.NewServersCommand(app))
 	app.RootCmd.AddCommand(cmd.NewAdminCommand(app))
+	app.RootCmd.AddCommand(cmd.NewRunCommand(app))
 
 	if err := app.Start(); err != nil {
 		panic(err)

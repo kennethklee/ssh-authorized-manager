@@ -1,4 +1,4 @@
-module sshauthman
+module github.com/kennethklee/ssh-authorized-manager/app
 
 go 1.20
 

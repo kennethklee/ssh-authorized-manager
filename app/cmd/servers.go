@@ -3,8 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"sshauthman/worker"
 	"text/tabwriter"
+
+	"github.com/kennethklee/ssh-authorized-manager/app/worker"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"

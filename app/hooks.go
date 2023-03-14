@@ -2,7 +2,8 @@ package main
 
 import (
 	"os"
-	"sshauthman/worker"
+
+	"github.com/kennethklee/ssh-authorized-manager/app/worker"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
