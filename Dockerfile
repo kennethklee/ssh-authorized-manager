@@ -19,7 +19,7 @@ CMD npm ci && npm start
 
 # Build Backend
 # =============
-FROM golang:1.18.3-alpine AS gobuilder
+FROM golang:1.20.2-alpine AS gobuilder
 ARG VERSION=dev
 
 ENV PATH="/app:${PATH}"
@@ -30,8 +30,10 @@ RUN apk add --no-cache sqlite \
     && go install github.com/cosmtrek/air@v1.40.4
 
 COPY app/ .
+COPY ssham/ /ssham
+COPY plugins/ /plugins
 
-RUN CGO_ENABLED=0 go build -ldflags "-s -w -X main.Version=${VERSION}" -o ssham github.com/kennethklee/ssh-authorized-manager/app/cmd/ssham
+RUN CGO_ENABLED=0 go build -ldflags "-s -w -X main.Version=${VERSION}" -o ssham .
 
 # development mode
 EXPOSE 8090

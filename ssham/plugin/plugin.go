@@ -71,3 +71,7 @@ func TriggerServe(event *core.ServeEvent) (err error) {
 	}
 	return
 }
+
+func GetPlugins() []Plugin {
+	return plugins
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/kennethklee/ssh-authorized-manager/ssham/cmd"
 	_ "github.com/kennethklee/ssh-authorized-manager/ssham/migrations"
 	"github.com/kennethklee/ssh-authorized-manager/ssham/plugin"
@@ -18,7 +19,19 @@ var ProgramName = "SSH Authorized Manager"
 var Version = "dev"
 
 func Main() {
+	fmt.Println(ProgramName, Version)
+
 	var app = pocketbase.New()
+
+	plugins := plugin.GetPlugins()
+	bold := color.New(color.Bold).Add(color.FgGreen)
+	if len(plugins) > 0 {
+		bold.Println("> Plugins")
+		for _, plugin := range plugins {
+			pluginInfo := plugin.Info()
+			fmt.Printf("  - %s (%s)\n", pluginInfo.Name, pluginInfo.Version)
+		}
+	}
 
 	err := plugin.TriggerPreload(app)
 	if err != nil {
@@ -26,13 +39,6 @@ func Main() {
 	}
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		fmt.Println(ProgramName, Version)
-
-		// bold := color.New(color.Bold).Add(color.FgGreen)
-		// bold.Println("> Config")
-		// authConfig := auth.HeaderAuthConfigFromEnv()
-		// authConfig.AdminLogin = true // Need this to manage users & servers
-		// auth.InstallHeaderAuth(e.App, e.Router, auth.HeaderAuthConfigFromEnv())
 		routes.Register(e.Router)
 		RegisterHooks(e.App, HooksConfigFromEnv())
 
