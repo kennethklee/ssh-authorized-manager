@@ -6,6 +6,7 @@ import (
 
 	"github.com/kennethklee/ssh-authorized-manager/ssham/cmd"
 	_ "github.com/kennethklee/ssh-authorized-manager/ssham/migrations"
+	"github.com/kennethklee/ssh-authorized-manager/ssham/plugin"
 	"github.com/kennethklee/ssh-authorized-manager/ssham/routes"
 	"github.com/kennethklee/ssh-authorized-manager/ssham/worker"
 
@@ -19,7 +20,7 @@ var Version = "dev"
 func Main() {
 	var app = pocketbase.New()
 
-	err := TriggerPluginsPreload(app)
+	err := plugin.TriggerPreload(app)
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +36,7 @@ func Main() {
 		routes.Register(e.Router)
 		RegisterHooks(e.App, HooksConfigFromEnv())
 
-		err = TriggerPluginsServe(e)
+		err = plugin.TriggerServe(e)
 		if err != nil {
 			return err
 		}
@@ -61,7 +62,7 @@ func Main() {
 	app.RootCmd.AddCommand(cmd.NewAdminCommand(app))
 	app.RootCmd.AddCommand(cmd.NewBuilderCommand(app))
 
-	err = TriggerPluginsLoad(app)
+	err = plugin.TriggerLoad(app)
 	if err != nil {
 		panic(err)
 	}

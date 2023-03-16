@@ -3,14 +3,14 @@ package headerAuth
 import (
 	"github.com/fatih/color"
 	auth "github.com/kennethklee/pb-auth"
-	"github.com/kennethklee/ssh-authorized-manager/ssham"
+	"github.com/kennethklee/ssh-authorized-manager/ssham/plugin"
 	"github.com/pocketbase/pocketbase/core"
 )
 
 type Plugin struct{}
 
-func (Plugin) Info() ssham.PluginInfo {
-	return ssham.PluginInfo{
+func (Plugin) Info() plugin.PluginInfo {
+	return plugin.PluginInfo{
 		Name:        "HeaderAuth",
 		Version:     "0.0.1",
 		Description: "Authenticate users based on HTTP headers",
@@ -39,5 +39,5 @@ func (Plugin) OnServe(e *core.ServeEvent) error {
 }
 
 func init() {
-	ssham.RegisterPlugin(&Plugin{})
+	plugin.Register(&Plugin{})
 }

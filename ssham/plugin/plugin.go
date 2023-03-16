@@ -1,4 +1,4 @@
-package ssham
+package plugin
 
 import (
 	"errors"
@@ -41,11 +41,11 @@ type PluginInfo struct {
 
 var plugins = []Plugin{}
 
-func RegisterPlugin(plugin Plugin) {
+func Register(plugin Plugin) {
 	plugins = append(plugins, plugin)
 }
 
-func TriggerPluginsPreload(app core.App) (err error) {
+func TriggerPreload(app core.App) (err error) {
 	for _, plugin := range plugins {
 		if pluginErr := plugin.OnPreload(app); pluginErr != nil {
 			err = errors.Join(err, pluginErr)
@@ -54,7 +54,7 @@ func TriggerPluginsPreload(app core.App) (err error) {
 	return
 }
 
-func TriggerPluginsLoad(app core.App) (err error) {
+func TriggerLoad(app core.App) (err error) {
 	for _, plugin := range plugins {
 		if pluginErr := plugin.OnLoad(app); pluginErr != nil {
 			err = errors.Join(err, pluginErr)
@@ -63,7 +63,7 @@ func TriggerPluginsLoad(app core.App) (err error) {
 	return
 }
 
-func TriggerPluginsServe(event *core.ServeEvent) (err error) {
+func TriggerServe(event *core.ServeEvent) (err error) {
 	for _, plugin := range plugins {
 		if pluginErr := plugin.OnServe(event); pluginErr != nil {
 			err = errors.Join(err, pluginErr)
