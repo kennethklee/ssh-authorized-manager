@@ -1,15 +1,14 @@
-module ssham
+module github.com/kennethklee/ssh-authorized-manager/plugins/header-auth
 
 go 1.20
 
-replace (
-	github.com/kennethklee/ssh-authorized-manager/ssam => ../ssham
-	github.com/kennethklee/ssh-authorized-manager/plugins/header-auth => ../plugins/header-auth
-)
+replace github.com/kennethklee/ssh-authorized-manager/ssham => ../../ssham
 
 require (
+	github.com/fatih/color v1.15.0
+	github.com/kennethklee/pb-auth v1.3.0
 	github.com/kennethklee/ssh-authorized-manager/ssham v0.0.0-20230314204355-67108df91fd1
-	github.com/kennethklee/ssh-authorized-manager/plugins/header-auth v0.0.0-00010101000000-000000000000
+	github.com/pocketbase/pocketbase v0.13.4
 )
 
 require (
@@ -38,7 +37,6 @@ require (
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/domodwyer/mailyak/v3 v3.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/fatih/color v1.15.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.1 // indirect
 	github.com/ganigeorgiev/fexpr v0.3.0 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
@@ -51,7 +49,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
-	github.com/kennethklee/pb-auth v1.3.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/labstack/echo/v5 v5.0.0-20220201181537-ed2888cfa198 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -62,7 +59,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/sftp v1.13.5 // indirect
 	github.com/pocketbase/dbx v1.10.0 // indirect
-	github.com/pocketbase/pocketbase v0.13.4 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/cobra v1.6.1 // indirect

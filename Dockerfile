@@ -31,7 +31,7 @@ RUN apk add --no-cache sqlite \
 
 COPY app/ .
 
-RUN CGO_ENABLED=0 go build -ldflags "-s -w -X main.Version=${VERSION}" -o ssham
+RUN CGO_ENABLED=0 go build -ldflags "-s -w -X main.Version=${VERSION}" -o ssham github.com/kennethklee/ssh-authorized-manager/app/cmd/ssham
 
 # development mode
 EXPOSE 8090

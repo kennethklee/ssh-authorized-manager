@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -21,7 +20,7 @@ type Plugin struct {
 
 // Parse plugin string into module, version, and replacement
 
-func parsePlugin(plugin string) (module, version, replacement string, err error) {
+func parsePlugin(plugin string) (result Plugin, err error) {
 	// module@version[=replacement]
 	pluginPattern, err := regexp.Compile(`(?P<module>.+)@(?P<version>.+)(=(?P<replacement>.+))?`)
 	if err != nil {
@@ -30,17 +29,18 @@ func parsePlugin(plugin string) (module, version, replacement string, err error)
 
 	match := pluginPattern.FindStringSubmatch(plugin)
 	if len(match) == 0 {
-		panic(fmt.Errorf("Invalid plugin: %s", plugin))
+		err = fmt.Errorf("invalid plugin: %s", plugin)
+		return
 	}
 
 	for i, name := range pluginPattern.SubexpNames() {
 		switch name {
 		case "module":
-			module = match[i]
+			result.Module = match[i]
 		case "version":
-			version = match[i]
+			result.Version = match[i]
 		case "replacement":
-			replacement = match[i]
+			result.Replacement = match[i]
 		}
 	}
 	return
@@ -53,33 +53,35 @@ func runGoMod(projectPath string, args ...string) error {
 	return goModCmd.Run()
 }
 
-func NewRunCommand(app core.App) *cobra.Command {
+func NewBuilderCommand(app core.App) *cobra.Command {
+	var isRun bool
 	var withPlugins []string
 	var runCommand = &cobra.Command{
-		Use:   "run",
-		Short: "Run the server with the configured plugins",
-		Long: `Run the server with the configured plugins.
+		Use:   "builder",
+		Short: "Build the app server with the configured plugins",
+		Long: `Build the app server with the configured plugins.
 
 This option requires the go toolchain to be installed.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Parse plugins module@version[=replacement]
 			plugins := []Plugin{}
-			for _, plugin := range withPlugins {
-				module, version, replacement, err := parsePlugin(plugin)
+			for _, pluginStr := range withPlugins {
+				plugin, err := parsePlugin(pluginStr)
 				if err != nil {
 					return err
 				}
 
-				plugins = append(plugins, Plugin{
-					Module:      module,
-					Version:     version,
-					Replacement: replacement,
-				})
+				plugins = append(plugins, plugin)
+			}
+
+			_, err := exec.LookPath("go")
+			if err != nil {
+				return fmt.Errorf("go toolchain not found: %w", err)
 			}
 
 			// Generate temp go project in /tmp
-			projectPath, err := ioutil.TempDir("", "ssham")
+			projectPath, err := os.MkdirTemp("", "ssham")
 			if err != nil {
 				return fmt.Errorf("failed to create temp project path: %w", err)
 			}
@@ -142,17 +144,27 @@ This option requires the go toolchain to be installed.
 				return fmt.Errorf("failed to tidy project: %w", err)
 			}
 
-			// Run `go run main.go args`
-			goRunCmd := exec.Command("go", "run", "main.go")
-			goRunCmd.Dir = projectPath
-			goRunCmd.Args = append(goRunCmd.Args, args...)
-			goRunCmd.Stdout = os.Stdout
-			goRunCmd.Stderr = os.Stderr
-			goRunCmd.Stdin = os.Stdin
-			return goRunCmd.Run()
+			if isRun {
+				// Run `go run main.go args`
+				goRunCmd := exec.Command("go", "run", "main.go")
+				goRunCmd.Dir = projectPath
+				goRunCmd.Args = append(goRunCmd.Args, args...)
+				goRunCmd.Stdout = os.Stdout
+				goRunCmd.Stderr = os.Stderr
+				goRunCmd.Stdin = os.Stdin
+				return goRunCmd.Run()
+			} else {
+				// Build `go build -o ssham main.go`
+				goBuildCmd := exec.Command("go", "build", "-o", "ssham", "main.go")
+				goBuildCmd.Dir = projectPath
+				goBuildCmd.Stdout = os.Stdout
+				goBuildCmd.Stderr = os.Stderr
+				return goBuildCmd.Run()
+			}
 		},
 	}
 	runCommand.Flags().StringArrayVar(&withPlugins, "with", []string{}, "Plugins to load (format: module@version[=replacement])")
+	runCommand.Flags().BoolVar(&isRun, "run", false, "Run the app instead of building")
 
 	return runCommand
 }
@@ -160,7 +172,7 @@ This option requires the go toolchain to be installed.
 const mainGoTemplate = `package main
 
 import (
-	ssham "github.com/kennethklee/ssh-authorized-manager/app"
+	"github.com/kennethklee/ssh-authorized-manager/ssham"
 	{{ range .Plugins }}
 	_ {{.Module}} {{.Version}}"
 	{{ end }}

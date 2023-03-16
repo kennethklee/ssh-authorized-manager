@@ -1,9 +1,9 @@
-package main
+package ssham
 
 import (
 	"os"
 
-	"github.com/kennethklee/ssh-authorized-manager/app/worker"
+	"github.com/kennethklee/ssh-authorized-manager/ssham/worker"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
