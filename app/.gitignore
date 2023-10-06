@@ -1,3 +1,6 @@
+# runtime artifacts
 pb_data/
 static/
+tmp/
 ssham
+.cache

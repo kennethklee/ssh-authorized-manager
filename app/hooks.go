@@ -1,4 +1,4 @@
-package ssham
+package main
 
 import (
 	"os"

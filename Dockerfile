@@ -19,26 +19,25 @@ CMD npm ci && npm start
 
 # Build Backend
 # =============
-FROM golang:1.20.2-alpine AS gobuilder
+FROM golang:1.21.1-alpine AS gobuilder
 ARG VERSION=dev
 
 ENV PATH="/app:${PATH}"
+ENV GOCACHE="/app/.cache"
 WORKDIR /app
 
 # Install debug dependencies
-RUN apk add --no-cache sqlite \
-    && go install github.com/cosmtrek/air@v1.40.4
+# RUN apk add --no-cache sqlite
 
 COPY app/ .
-COPY ssham/ /ssham
-COPY plugins/ /plugins
 
-RUN CGO_ENABLED=0 go build -ldflags "-s -w -X main.Version=${VERSION}" -o ssham .
+# Slow build
+RUN CGO_ENABLED=0 go build -v -ldflags "-s -w -X main.Version=$VERSION" -tags timetzdata,sqlite_omit_load_extension -o ssham
 
 # development mode
 EXPOSE 8090
-HEALTHCHECK --start-period=5s --retries=2 CMD wget --no-verbose --tries=1 --spider 0:8090/api/me
-CMD ["/go/bin/air", "-c", "/app/air.toml"]
+HEALTHCHECK --start-period=5s --retries=2 --interval=30s CMD wget --no-verbose --tries=1 --spider 0:8090/api/me
+CMD ["ssham", "serve", "--http", ":8090"]
 
 
 

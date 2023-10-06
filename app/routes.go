@@ -1,24 +1,23 @@
-package routes
+package main
 
 import (
 	"fmt"
 	"io/fs"
 	"net/http/httputil"
 	"net/url"
-	"os"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase/apis"
 )
 
-func Register(router *echo.Echo) {
+func RegisterRoutes(router *echo.Echo) {
 	// Serve static files
-	if os.Getenv("APP_ENV") == "production" {
-		fileSystem := echo.MustSubFS(router.Filesystem, "static")
-		router.GET("/*", spaFS(fileSystem))
-	} else {
+	if dev {
 		fmt.Println("  - Development mode -- proxy frontend to http://web:5173")
 		router.GET("/*", reverseProxy("http://web:5173"))
+	} else {
+		fileSystem := echo.MustSubFS(router.Filesystem, "static")
+		router.GET("/*", spaFS(fileSystem))
 	}
 
 	router.GET("/api/me", func(c echo.Context) error {

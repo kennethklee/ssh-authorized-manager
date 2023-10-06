@@ -45,7 +45,7 @@ case $1 in
     docker-compose -f docker-compose.yml -f docker-compose.dev.yml restart ${1:-app web}
     ;;
 
-  staging)
+  stage)
     shift
     docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d --build --remove-orphans "$@"
     $0 port

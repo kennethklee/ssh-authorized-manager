@@ -31,6 +31,7 @@ With listen address on a different port:
 
     $ docker run -dp 8090:8000 --name=ssh-authorized-manager <image> ssham serve --http 0:8000
 
+Once running, visit http://localhost:8090/_ to create your first admin.
 
 Options
 --------
@@ -64,6 +65,7 @@ Feature requests and pull requests are welcome.
 
 - docker
 - docker-compose
+- [go-task](https://taskfile.dev/installation/)
 
 ### Running
 

@@ -1,0 +1,84 @@
+version: '3'
+
+env:
+  ENV:
+    sh: echo ${ENV:-dev}
+  VERSION:
+    sh: git describe --tags --always --dirty
+
+tasks:
+  default:
+    cmds:
+      - echo SSH Authorized Manager $VERSION
+      - task --list-all
+    silent: true
+
+  version:
+    desc: Show version
+    cmds:
+      - echo $VERSION
+    silent: true
+
+  up:
+    desc: Start the application
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml up --remove-orphans -d --build {{.CLI_ARGS}}
+
+  down:
+    desc: Destroy the application and data
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml down --volumes
+
+  start:
+    desc: Start the application
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml up --remove-orphans -d {{.CLI_ARGS}}
+
+  stop:
+    desc: Stop the application
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml stop {{.CLI_ARGS}}
+
+  stage:
+    desc: Run staging stack (as close to production)
+    env:
+      ENV: test
+    cmds:
+      - "echo Run: ENV=test task up"
+
+  logs:
+    desc: Show logs
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml logs --tail 100 -f {{.CLI_ARGS}}
+
+  ps:
+    desc: Show running containers
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml ps -a
+
+  port:
+    desc: Show port mapping
+    env:
+      host:
+        sh: docker compose port app 8090
+    cmds:
+      - echo Server hosted on http://${host}
+
+  app:
+    desc: Run a command in the app container
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml exec app {{.CLI_ARGS}}
+
+  app:build:
+    desc: Locally build the ssham executable
+    env:
+      GOCACHE:
+        sh: echo $PWD/app/.cache
+      CGO_ENABLED: 0
+    cmds:
+      - (echo $GOCACHE; cd app; go build -v -ldflags "-s -w -X main.Version=$VERSION" -tags timetzdata,sqlite_omit_load_extension -o ssham)
+
+  web:
+    desc: Run a command in the web container
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml exec web {{.CLI_ARGS}}

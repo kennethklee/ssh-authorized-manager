@@ -70,7 +70,7 @@
         <SideNavLink text="My Public Keys" href="/publicKeys" />
         <SideNavLink text="My Servers" href="/servers" />
       {:else}
-        <li>To save your public keys and servers, <a href="/_/#/users">create a user for yourself</a>.</li>
+        <li>To save your public keys and servers, <a rel="external" href="/_/#/users">create a user for yourself</a>.</li>
       {/if}
 
       <!-- Admin -->
