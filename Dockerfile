@@ -27,17 +27,18 @@ ENV GOCACHE="/app/.cache"
 WORKDIR /app
 
 # Install debug dependencies
-# RUN apk add --no-cache sqlite
+RUN apk add --no-cache sqlite \
+  && go install github.com/cosmtrek/air@latest
 
 COPY app/ .
 
 # Slow build
-RUN CGO_ENABLED=0 go build -v -ldflags "-s -w -X main.Version=$VERSION" -tags timetzdata,sqlite_omit_load_extension -o ssham
+RUN CGO_ENABLED=0 go build -v -ldflags "-s -w -X main.Version=$VERSION" -tags timetzdata -o ssham
 
 # development mode
 EXPOSE 8090
-HEALTHCHECK --start-period=5s --retries=2 --interval=30s CMD wget --no-verbose --tries=1 --spider 0:8090/api/me
-CMD ["ssham", "serve", "--http", ":8090"]
+HEALTHCHECK --start-period=5s --retries=2 --interval=30s CMD ssham healthcheck
+CMD ["/go/bin/air", "-c", "/app/air.toml"]
 
 
 
@@ -55,4 +56,6 @@ COPY --from=nodebuilder /web/dist/ /app/static
 EXPOSE 8090
 VOLUME /tmp
 VOLUME /app/pb_data
+
+HEALTHCHECK --start-period=5s --retries=2 --interval=30s CMD ssham healthcheck
 CMD ["ssham", "serve", "--http", ":8090"]

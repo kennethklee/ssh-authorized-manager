@@ -9,7 +9,7 @@ services:
     build:
       context: .
       args:
-        VERSION: ${VERSION}
+        VERSION: ${VERSION:-latest}
     environment:
       - APP_ENV=production
 

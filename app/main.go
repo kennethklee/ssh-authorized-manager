@@ -51,7 +51,10 @@ func main() {
 	app.RootCmd.Use = os.Args[0]
 	app.RootCmd.Short = ProgramName
 	app.RootCmd.Version = Version
-	app.RootCmd.AddCommand(cmd.NewServersCommand(app))
+	app.RootCmd.AddCommand(
+		cmd.NewServersCommand(app),
+		cmd.NewHealthCheckCmd(app),
+	)
 
 	if err := app.Start(); err != nil {
 		panic(err)

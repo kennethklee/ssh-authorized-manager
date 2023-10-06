@@ -17,6 +17,7 @@ services:
       - ./web/dist:/app/static
     environment:
       - APP_ENV=development
+      - VERSION=${VERSION}-dev
 
       # Header auth options
       # When using header auth, visit /_ to create an admin user with the below email. the password doesn't matter
@@ -24,12 +25,6 @@ services:
       # - AUTO_CREATE_USER=1
       # - FORCE_EMAIL=developer@ssham.io
       # - FORCE_NAME=Developer
-    develop:
-      watch:
-        - path: ./app
-          action: rebuild
-          ignore:
-            - ./app/vendor
 
   web:
     image: sshauth:web

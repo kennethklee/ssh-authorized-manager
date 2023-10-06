@@ -22,17 +22,12 @@ tasks:
   up:
     desc: Start the application
     cmds:
-      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml up --remove-orphans -d --build {{.CLI_ARGS}}
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml up --remove-orphans -d {{.CLI_ARGS}}
 
   down:
     desc: Destroy the application and data
     cmds:
       - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml down --volumes
-
-  start:
-    desc: Start the application
-    cmds:
-      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml up --remove-orphans -d {{.CLI_ARGS}}
 
   stop:
     desc: Stop the application
@@ -58,16 +53,16 @@ tasks:
 
   port:
     desc: Show port mapping
-    env:
+    vars:
       host:
         sh: docker compose port app 8090
     cmds:
-      - echo Server hosted on http://${host}
+      - echo Server hosted on http://{{.host}}
 
   app:
     desc: Run a command in the app container
     cmds:
-      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml exec app {{.CLI_ARGS}}
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml exec app {{or .CLI_ARGS "sh"}}
 
   app:build:
     desc: Locally build the ssham executable

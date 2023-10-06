@@ -14,3 +14,9 @@ services:
       - APP_VERSION=${VERSION}-test
     ports:
       - '8090'
+    develop:
+      watch:
+        - path: ./app
+          action: rebuild
+          ignore:
+            - ./app/vendor
