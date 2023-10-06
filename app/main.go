@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/fatih/color"
 	auth "github.com/kennethklee/pb-auth"
@@ -17,7 +16,7 @@ import (
 
 var ProgramName = "SSH Authorized Manager"
 var Version = "dev"
-var dev = strings.HasSuffix(Version, "dev")
+var dev = os.Getenv("APP_ENV") == "development"
 
 func main() {
 	fmt.Println(ProgramName, Version)

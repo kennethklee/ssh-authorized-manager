@@ -77,3 +77,9 @@ tasks:
     desc: Run a command in the web container
     cmds:
       - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml exec web {{.CLI_ARGS}}
+
+  test:
+    desc: Run tests
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml exec app go test -v ./...
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml exec web npm test

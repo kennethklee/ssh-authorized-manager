@@ -69,26 +69,24 @@ Feature requests and pull requests are welcome.
 
 ### Running
 
-The `dev.sh` file acts as a cross-compatible runner. There are two modes -- `development` and `production`.
+There are two modes -- development `ENV=dev` and test `ENV=test`.
 
 In `development`, two containers start up, app and web. The app container does live-reloading. The web container does hot-reloading. Any code changes anywhere in the project will be automatically reloaded.
 
 Start the stack:
 
-    $ ./dev.sh up
+    $ task up
 
 Stop the stack:
 
-    $ ./dev.sh stop
+    $ task stop
 
 Destroy the stack:
 
-    $ ./dev.sh down
+    $ task down
 
 Start the stack in a production-like mode (single container):
 
-    $ ./dev.sh staging
+    $ ENV=test task up
 
-In `production` mode, the app runs in a production-like fashion, hence the term staging. Live reloading and hot reloading is disabled.
-
-Environment variable, `APP_ENV` can be either `development` or `production`. This signals the app which mode to run in.
+In `test` mode, the app runs in a production-like fashion, hence the term staging. Live reloading and hot reloading is disabled.
