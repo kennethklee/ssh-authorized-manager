@@ -26,7 +26,6 @@ services:
       # - FORCE_NAME=Developer
     develop:
       watch:
-        # sync static content
         - path: ./app
           action: rebuild
           ignore:
