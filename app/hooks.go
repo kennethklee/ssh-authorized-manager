@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"ssham/worker"
@@ -40,9 +39,12 @@ func RegisterHooks(app core.App, config HooksConfig) {
 // conditionally sync servers when a record is created or updated or deleted
 func syncServerHookHandler(action string, dao *daos.Dao, r *models.Record) error {
 	if r.Collection().Name == "servers" {
-		log.Println("syncServerHookHandler", action, r.Collection().Name, r.Id)
+		if action == "delete" {
+			// TODO delete ssh authorized keys markers
+			return nil
+		}
+		// Sync ssh authorized keys
 		worker.SubmitAndWait(&worker.SyncServerWork{Server: r})
-		log.Println("syncServerHookHandler", action, r.Collection().Name, r.Id, "done")
 	}
 	if r.Collection().Name == "publicKeys" {
 		// find all servers that need this public key updated
