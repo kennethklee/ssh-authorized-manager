@@ -1,6 +1,7 @@
 version: '3'
 
 env:
+  PORT: 7070
   ENV:
     sh: echo ${ENV:-dev}
   VERSION:
@@ -33,6 +34,11 @@ tasks:
     desc: Stop the application
     cmds:
       - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml stop {{.CLI_ARGS}}
+
+  restart:
+    desc: Restart the application
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml restart {{.CLI_ARGS}}
 
   stage:
     desc: Run staging stack (as close to production)

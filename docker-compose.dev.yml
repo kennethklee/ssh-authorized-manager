@@ -26,6 +26,7 @@ services:
       # - FORCE_EMAIL=developer@ssham.io
       # - FORCE_NAME=Developer
 
+
   web:
     image: sshauth:web
     build:
@@ -39,3 +40,4 @@ services:
       - ./web:/web
     environment:
       - APP_VERSION=${VERSION}-dev
+      - USE_POLLING=1

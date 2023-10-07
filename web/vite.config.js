@@ -13,4 +13,13 @@ export default defineConfig({
       '$lib': resolve('src/lib'),
     },
   },
+
+  build: {
+    sourcemap: true
+  },
+  server: {
+    watch: {
+      usePolling: process.env.USE_POLLING ?? false
+    }
+  }
 })

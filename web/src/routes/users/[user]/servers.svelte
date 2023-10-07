@@ -25,31 +25,30 @@ var selectedRowIds = []
 let saved = false
 
 
-
 onMount(() => refresh())
 
 function refresh(query) {
   /** @type {any} */
-  pb.collection('servers').getFullList(200)
+  pb.collection('servers').getFullList(200, {fields: 'id,name,username,host,port,state,created,updated'})
     .then(items => {
       allServers = items
 
-      pb.collection('userServers').getFullList(200, {filter: `userId="${user.id}"`})
+      pb.collection('userServers').getFullList(200, {filter: `user="${user.id}"`})
         .then(items => {
           userServers = items
-          selectedRowIds = items.map(us => us.serverId)
+          selectedRowIds = items.map(us => us.server)
         })
     })
 }
 
 function handleSave(ev) {
   // diff original and selected server ids
-  const addedServerIds = selectedRowIds.filter(id => !userServers.some(us => us.serverId === id))
-  const removedUserServers = userServers.filter(us => !selectedRowIds.includes(us.serverId))
+  const addedServerIds = selectedRowIds.filter(id => !userServers.some(us => us.server === id))
+  const removedUserServers = userServers.filter(us => !selectedRowIds.includes(us.server))
 
   // add new user servers
   addedServerIds.forEach(id => {
-    pb.collection('userServers').create({userId: user.id, serverId: id}, {$autoCancel: false})
+    pb.collection('userServers').create({user: user.id, server: id}, {$autoCancel: false})
   })
   // remove old user servers
   removedUserServers.forEach(us => {

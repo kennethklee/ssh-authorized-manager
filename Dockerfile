@@ -48,14 +48,14 @@ FROM scratch
 
 ENV PATH="/app:${PATH}"
 ENV APP_ENV="production"
+ENV TMPDIR="/app/pb_data/.tmp"
 WORKDIR /app
 
 COPY --from=gobuilder /app/ssham /app/ssham
 COPY --from=nodebuilder /web/dist/ /app/static
 
 EXPOSE 8090
-VOLUME /tmp
 VOLUME /app/pb_data
 
 HEALTHCHECK --start-period=5s --retries=2 --interval=30s CMD ssham healthcheck
-CMD ["ssham", "serve", "--http", ":8090"]
+CMD ["ssham", "serve", "--http", "0.0.0.0:8090"]

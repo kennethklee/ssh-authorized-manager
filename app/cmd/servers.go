@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"text/tabwriter"
 
-	"github.com/kennethklee/ssh-authorized-manager/ssham/worker"
+	"ssham/worker"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
@@ -52,7 +53,7 @@ func NewServersCommand(app core.App) *cobra.Command {
 			// Setup worker to sync authorized_keys on a server
 			worker.SetApplication(app)
 			work := worker.SyncServerWork{Server: server}
-			if err := work.Execute(); err != nil {
+			if err := work.Execute(context.Background()); err != nil {
 				fmt.Println(err)
 			}
 		},

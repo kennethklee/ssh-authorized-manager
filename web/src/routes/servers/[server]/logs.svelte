@@ -8,6 +8,7 @@ import {
   Toolbar,
   ToolbarContent,
   Button,
+  Tag,
 } from 'carbon-components-svelte'
 import * as timeago from 'timeago.js'
 import Repeat from 'carbon-icons-svelte/lib/Repeat.svelte'
@@ -19,7 +20,6 @@ export var server = {port: 22, usePassword: true}
 const headers = [
   {key: 'ago', empty: true, width: '150px'},
   {key: 'created', value: 'Date', width: '200px'},
-  {key: 'type', value: 'Type', width: '100px'},
   {key: 'message', value: 'Message'},
   {key: 'actions', empty: true, width: '60px'},
 ]
@@ -32,10 +32,10 @@ onMount(() => {
   refresh()
 
   pb.realtime.subscribe('serverLogs', function (e) {
-    if (e.record.serverId !== server.id) return ;
-    if (e.action === 'create' && e.record.serverId == server.id) {
+    if (e.record.server !== server.id) return ;
+    if (e.action === 'create' && e.record.server == server.id) {
       logs = [e.record, ...logs]
-    } else if (e.action === 'delete' && e.record.serverId == server.id) {
+    } else if (e.action === 'delete' && e.record.server == server.id) {
       logs = logs.filter(l => l.id !== e.record.id)
     }
   })
@@ -46,7 +46,7 @@ onDestroy(() => {
 })
 
 function refresh() {
-  pb.collection('serverLogs').getList(1, 200, {sort: '-created', filter: `serverId="${server.id}"`})
+  pb.collection('serverLogs').getList(1, 200, {sort: '-created', filter: `server="${server.id}"`})
     .then(data => logs = data.items)
 }
 
@@ -77,7 +77,7 @@ function trustHostKey() {
 }
 
 function trustHostName() {
-  pb.collection('servers').update(server.id, {hostname: details.payload})
+  pb.collection('servers').update(server.id, {hostName: details.payload})
   deleteMessage(details.id)
 }
 </script>
@@ -105,10 +105,10 @@ function trustHostName() {
   <Button style="float: right;">Force Sync</Button>
   <Button href="/servers/{server.id}">Back to {server.name}</Button>
 
-  <DataTable zebra title="Sync logs for {server.name}" {headers} rows={logs}>
+  <DataTable zebra title="Sync logs for {server.name}" description="Please wait for logs..." {headers} rows={logs}>
     <svelte:fragment slot="cell" let:row let:cell>
       {#if cell.key === "message"}
-        {cell.value}
+      <button type="button" class="bx--btn bx--btn--ghost" on:click={() => showDetails(row)}><Tag>{row.type}</Tag> {cell.value}</button>
       {:else if cell.key === "ago"}
         <time datetime={formatDateTime(row.created)}>{timeago.format(new Date(formatDateTime(row.created)))}</time>
       {:else if cell.key === "created"}
@@ -129,3 +129,10 @@ function trustHostName() {
 
   </DataTable>
 </Content>
+
+<style>
+  button.bx--btn--ghost {
+    max-width: initial;
+    padding: initial;
+  }
+</style>

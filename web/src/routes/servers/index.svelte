@@ -20,7 +20,7 @@ import LogState from './_logState.svelte'
 
 
 const headers = [
-  {key: 'status', value: 'Last Sync'},
+  {key: 'state', value: 'State'},
   {key: 'name', value: 'Name'},
   {key: 'remote', value: 'Remote'},
   {key: 'actions', empty: true, width: '60px'},
@@ -40,27 +40,10 @@ function refresh(query) {
 
   /** @type {any} */
   var options = {}
-  if ($user.isAdmin && !query.has('all')) options = {filter: `@collection.userServers.userId="${$user.id}" && @collection.userServers.serverId=id`}
+  if ($user.isAdmin && !query.has('all')) options = {filter: `@collection.userServers.user="${$user.id}" && @collection.userServers.server=id`}
 
-  pb.collection('servers').getFullList(200, options)
-    .then(items => {
-      servers = items
-
-      // TODO need a better way to group one log per server on server-side instead of client-side
-      return Promise.all(items.map(s => fetchLastServerLog(s.id)))
-    })
-    .then(logs => {
-      // make a map of serverId to messages
-      const state = {}
-      logs.forEach(log => state[log.serverId] = log)
-      servers.forEach(server => server.lastLog = state[server.id])
-      servers = servers // force datatable update
-    })
-}
-
-function fetchLastServerLog(id) {
-  return pb.collection('serverLogs').getList(1, 1, {filter: `serverId='${id}'`, sort: '-created', $autoCancel: false})
-    .then(data => data.items[0])
+  pb.collection('servers').getFullList(200, {...options, fields: 'id,name,username,host,port,state,created,updated'})
+    .then(items => servers = items)
 }
 
 </script>
@@ -72,7 +55,7 @@ function fetchLastServerLog(id) {
         <Link href={'/servers/' + row.id}>{cell.value}</Link>
       {:else if cell.key === "remote"}
         <CopyButton text={sshTarget(row)} /> {sshTarget(row)}
-      {:else if cell.key === "status"}
+      {:else if cell.key === "state"}
         <LogState {row} />
       {:else if cell.key === "actions"}
         {#if $user?.isAdmin}

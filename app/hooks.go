@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log"
 	"os"
 
-	"github.com/kennethklee/ssh-authorized-manager/ssham/worker"
+	"ssham/worker"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
@@ -39,11 +40,13 @@ func RegisterHooks(app core.App, config HooksConfig) {
 // conditionally sync servers when a record is created or updated or deleted
 func syncServerHookHandler(action string, dao *daos.Dao, r *models.Record) error {
 	if r.Collection().Name == "servers" {
-		worker.SubmitAndForget(&worker.SyncServerWork{Server: r})
+		log.Println("syncServerHookHandler", action, r.Collection().Name, r.Id)
+		worker.SubmitAndWait(&worker.SyncServerWork{Server: r})
+		log.Println("syncServerHookHandler", action, r.Collection().Name, r.Id, "done")
 	}
 	if r.Collection().Name == "publicKeys" {
 		// find all servers that need this public key updated
-		servers, err := collectServersByUserID(dao, r.GetString("userId"))
+		servers, err := collectServersByUserID(dao, r.GetString("user"))
 		if err != nil {
 			return err
 		}
@@ -54,7 +57,7 @@ func syncServerHookHandler(action string, dao *daos.Dao, r *models.Record) error
 	}
 	if r.Collection().Name == "userServers" {
 		// fetch server
-		server, _ := dao.FindRecordById("servers", r.GetString("serverId"), nil)
+		server, _ := dao.FindRecordById("servers", r.GetString("server"), nil)
 		worker.SubmitAndForget(&worker.SyncServerWork{Server: server})
 	}
 
@@ -62,14 +65,14 @@ func syncServerHookHandler(action string, dao *daos.Dao, r *models.Record) error
 }
 
 func collectServersByUserID(dao *daos.Dao, userId string) ([]*models.Record, error) {
-	userServers, err := dao.FindRecordsByExpr("userServers", &dbx.HashExp{"userId": userId})
+	userServers, err := dao.FindRecordsByExpr("userServers", &dbx.HashExp{"user": userId})
 	if err != nil {
 		return nil, err
 	}
 
 	var serverIds = []interface{}{}
 	for _, userServer := range userServers {
-		serverIds = append(serverIds, userServer.GetString("serverId"))
+		serverIds = append(serverIds, userServer.GetString("server"))
 	}
 
 	servers, err := dao.FindRecordsByExpr("servers", dbx.In("id", serverIds...))

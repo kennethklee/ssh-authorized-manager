@@ -11,6 +11,7 @@ import {
   PasswordInput,
   Loading,
   Modal,
+  TextArea,
 } from 'carbon-components-svelte'
 import {onMount} from 'svelte'
 import routeTo from 'page'
@@ -35,15 +36,17 @@ function handleSave(ev) {
   isSaving = true
 
   // Delete secret fields if not provided
-  if (server['#password'] === '') {
-    server = {...server, '#password': undefined}
-  }
-  if (server['#privateKey'] === '') {
-    server = {...server, '#privateKey': undefined}
-  }
-  if (server['#privateKeyPassphrase'] === '') {
-    server = {...server, '#privateKeyPassphrase': undefined}
-  }
+  // if (server['password'] === '') {
+  //   server = {...server, 'password': undefined}
+  // }
+  // if (server['privateKey'] === '') {
+  //   server = {...server, 'privateKey': undefined}
+  // }
+  // if (server['privateKeyPassphrase'] === '') {
+  //   server = {...server, 'privateKeyPassphrase': undefined}
+  // }
+  // replace all whitespace with blank
+  // server.privateKey = server.privateKey.replaceAll(/\s/g, '')
 
   // @ts-ignore
   pb.save('servers', server)
@@ -121,14 +124,14 @@ function deleteServer(id) {
       <h4>Authentication</h4>
       <FormGroup><Toggle labelText="Use Password?" bind:toggled={server.usePassword}/></FormGroup>
       {#if server.usePassword}
-      <FormGroup><PasswordInput labelText="Password" placeholder="********" bind:value={server['#password']} /></FormGroup>
+      <FormGroup><PasswordInput labelText="Password" placeholder="********" bind:value={server['password']} /></FormGroup>
       {:else}
-      <FormGroup><PasswordInput labelText="Private Key" bind:value={server['#privateKey']} /></FormGroup>
-      <FormGroup><PasswordInput labelText="Passphrase" bind:value={server['#privateKeyPassphrase']} /></FormGroup>
+      <FormGroup><TextArea labelText="Private Key" bind:value={server['privateKey']} /></FormGroup>
+      <FormGroup><PasswordInput labelText="Passphrase" bind:value={server['privateKeyPassPhrase']} /></FormGroup>
       {/if}
 
       <h4>Verification</h4>
-      <p>Leave these blank if unknown. You will be asked to verify them in the sync logs.</p>
+      <p>Leave these blank if unknown. You will be asked to verify them in the sync logs if validation fails.</p>
       <FormGroup><TextInput labelText="Long host name" helperText="Found with `hostname -f` on the server" bind:value={server.hostname} /></FormGroup>
       <FormGroup><TextInput labelText="Host Key" bind:value={server.hostKey} /></FormGroup>
 

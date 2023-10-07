@@ -2,9 +2,9 @@ package worker
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"strings"
@@ -48,14 +48,14 @@ func (work *SyncServerWork) Name() string {
 	return "Sync Server - " + work.Server.GetString("name")
 }
 
-func (work *SyncServerWork) Execute() error {
+func (work *SyncServerWork) Execute(ctx context.Context) error {
 	// Prepare auth
 	var auth goph.Auth
 	if work.Server.GetBool("usePassword") {
-		auth = goph.Password(work.Server.GetString("#password"))
+		auth = goph.Password(work.Server.GetString("password"))
 	} else {
 		var err error
-		auth, err = goph.Key(work.Server.GetString("#privateKey"), work.Server.GetString("#privateKeyPassphrase"))
+		auth, err = goph.RawKey(work.Server.GetString("privateKey"), work.Server.GetString("privateKeyPassPhrase"))
 		if err != nil {
 			CreateServerLog(work.Server, "error", "Failed to load private key. Passphrase may be incorrect.", err.Error())
 			return err
@@ -79,17 +79,17 @@ func (work *SyncServerWork) Execute() error {
 	}
 	defer client.Close()
 	fmt.Println("[WORKER] Connected to", work.Server.GetString("name"))
-
 	// Verify hostname
-	if work.Server.GetString("hostname") != "" {
-		if _, err := verifyServerHostname(client, work.Server.GetString("hostname")); err != nil {
+
+	if work.Server.GetString("hostName") != "" {
+		if _, err := verifyServerHostname(client, work.Server.GetString("hostName")); err != nil {
 			CreateServerLog(work.Server, "error", "Failed to verify hostname. Possible port redirection.", err.Error())
 			return err
 		}
-		fmt.Println("[WORKER] Verified hostname", work.Server.GetString("hostname"))
+		fmt.Println("[WORKER] Verified hostname", work.Server.GetString("hostName"))
 	} else {
 		// hostname is unknown, ask to if hostname is trusted
-		hostname, _ := verifyServerHostname(client, work.Server.GetString("hostname"))
+		hostname, _ := verifyServerHostname(client, work.Server.GetString("hostName"))
 		msg := fmt.Sprintf("Hostname does not match, do you trust this server?\nHostname: %s", hostname)
 		CreateServerLog(work.Server, "hostName", msg, hostname)
 		return fmt.Errorf("ssh: required hostname is not known")
@@ -104,22 +104,23 @@ func (work *SyncServerWork) Execute() error {
 
 	// inject authorized keys into our section
 	// We may be able to do this better within the SSH client instead of download/upload, but this is a good start.
-	if err := client.Download(".ssh/authorized_keys", "/tmp/authorized_keys"); err != nil {
+	tempAuthorizedKeysFile := os.TempDir() + "/authorized_keys"
+	if err := client.Download(".ssh/authorized_keys", tempAuthorizedKeysFile); err != nil {
 		CreateServerLog(work.Server, "error", "Failed to download authorized keys. Is the file `~/.ssh/authorized_keys` missing?", err.Error())
 		return err
 	}
-	startLines, _, endLines, err := parseAuthorizedKeys("/tmp/authorized_keys")
+	startLines, _, endLines, err := parseAuthorizedKeys(tempAuthorizedKeysFile)
 	if err != nil {
 		CreateServerLog(work.Server, "error", "Failed to parse authorized_keys file.", err.Error())
 		return err
 	}
 	start := []byte(strings.Join(startLines, "\n"))
 	end := []byte(strings.Join(endLines, "\n"))
-	if err := assembleAuthorizedKeys("/tmp/authorized_keys", start, authorizedKeys, end); err != nil {
+	if err := assembleAuthorizedKeys(tempAuthorizedKeysFile, start, authorizedKeys, end); err != nil {
 		CreateServerLog(work.Server, "error", "Failed to assemble authorized_keys file.", err.Error())
 		return err
 	}
-	client.Upload("/tmp/authorized_keys", ".ssh/authorized_keys")
+	client.Upload(tempAuthorizedKeysFile, ".ssh/authorized_keys")
 	fmt.Println("[WORKER] Synced authorized keys")
 	CreateServerLog(work.Server, "info", "Successfully synced authorized keys", "")
 
@@ -191,7 +192,7 @@ func verifyServerHostname(client *goph.Client, hostname string) (string, error) 
 
 func collectAuthorizedKeys(dao *daos.Dao, server *models.Record) (authorizedKeys []AuthorizedKey, err error) {
 	// collect direct users associated with this server
-	userServersRecords, err := dao.FindRecordsByExpr("userServers", &dbx.HashExp{"serverId": server.Id})
+	userServersRecords, err := dao.FindRecordsByExpr("userServers", &dbx.HashExp{"server": server.Id})
 	if err != nil {
 		err = fmt.Errorf("failed to find userServers records: %s", err.Error())
 		return
@@ -200,12 +201,12 @@ func collectAuthorizedKeys(dao *daos.Dao, server *models.Record) (authorizedKeys
 	userIds := []interface{}{}
 	userOptionsMap := map[string]string{}
 	for _, usersServer := range userServersRecords {
-		userIds = append(userIds, usersServer.GetString("userId"))
-		userOptionsMap[usersServer.GetString("userId")] = usersServer.GetString("options")
+		userIds = append(userIds, usersServer.GetString("user"))
+		userOptionsMap[usersServer.GetString("user")] = usersServer.GetString("options")
 	}
 
 	// collect public keys associated with users
-	publicKeys, err := dao.FindRecordsByExpr("publicKeys", dbx.In("userId", userIds...))
+	publicKeys, err := dao.FindRecordsByExpr("publicKeys", dbx.In("user", userIds...))
 	if err != nil {
 		err = fmt.Errorf("failed to find publicKeys records: %s", err.Error())
 		return
@@ -213,13 +214,13 @@ func collectAuthorizedKeys(dao *daos.Dao, server *models.Record) (authorizedKeys
 
 	authorizedKeys = []AuthorizedKey{}
 	for _, publicKey := range publicKeys {
-		key, err := parsePublicKey(publicKey.GetString("publicKey"))
+		key, err := parsePublicKey(publicKey.GetString("key"))
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse public key: %s", err.Error())
 		}
 
 		authorizedKeys = append(authorizedKeys, AuthorizedKey{
-			Options: userOptionsMap[publicKey.GetString("userId")],
+			Options: userOptionsMap[publicKey.GetString("user")],
 			Type:    key.Type(),
 			Key:     key,
 			Comment: publicKey.GetString("comment"),
@@ -235,7 +236,7 @@ func parseAuthorizedKeys(filename string) (startLines []string, betweenLines []s
 	endLines = []string{}
 
 	// read fileContents
-	fileContents, err := ioutil.ReadFile(filename)
+	fileContents, err := os.ReadFile(filename)
 	if err != nil {
 		return
 	}

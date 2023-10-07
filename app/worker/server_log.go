@@ -26,7 +26,7 @@ func SaveServerLog(message ServerLog) error {
 
 	serverLog := models.NewRecord(serverLogsCollection)
 
-	serverLog.Set("serverId", message.serverId)
+	serverLog.Set("server", message.serverId)
 	serverLog.Set("type", message.msgType)
 	serverLog.Set("message", message.message)
 	serverLog.Set("payload", message.payload)
@@ -38,7 +38,7 @@ func CreateServerLog(serverRecord *models.Record, msgType string, message string
 	serverLogsCollection, _ := app.Dao().FindCollectionByNameOrId("serverLogs")
 
 	serverLog := models.NewRecord(serverLogsCollection)
-	serverLog.Set("serverId", serverRecord.Id)
+	serverLog.Set("server", serverRecord.Id)
 	serverLog.Set("type", msgType)
 	serverLog.Set("message", message)
 	serverLog.Set("payload", payload)
@@ -47,7 +47,7 @@ func CreateServerLog(serverRecord *models.Record, msgType string, message string
 		return err
 	}
 
-	serverRecord.Set("lastState", msgType)
+	serverRecord.Set("state", msgType)
 	app.Dao().SaveRecord(serverRecord)
 
 	event := &core.RecordCreateEvent{Record: serverLog}

@@ -24,7 +24,7 @@ var isConfirmDelete = false
 $: initOnce(publicKey)  // initialize server with item once
 
 function initOnce(publicKey) {
-  title = publicKey.comment || (publicKey.publicKey ? publicKey.publicKey.slice(0, 10) + '...' : 'New Public Key')
+  title = publicKey.comment || (publicKey.key ? publicKey.key.slice(0, 10) + '...' : 'New Public Key')
   document.title = title
 }
 
@@ -32,7 +32,7 @@ function handleSave(ev) {
   ev.preventDefault()
 
   isSaving = true
-  publicKey.userId = publicKey.userId || $user.id
+  publicKey.user = publicKey.user || $user.id
 
   // @ts-ignore
   pb.save('publicKeys', publicKey)
@@ -50,16 +50,16 @@ function handleSave(ev) {
 
 function handlePublicKeyChange(ev) {
   // format <type> <key> <comment>
-  var parts = publicKey.publicKey.trim().split(' ')
+  var parts = publicKey.key.trim().split(' ')
   if (parts.length === 3) {
     // Usually <type> <key> <comment>
     publicKey.type = parts[0]
-    publicKey.publicKey = parts[1]
+    publicKey.key = parts[1]
     publicKey.comment = parts[2]
   } else if (parts.length === 2) {
     // Usually <type> <key>
     publicKey.type = parts[0]
-    publicKey.publicKey = parts[1]
+    publicKey.key = parts[1]
   }
 }
 
@@ -108,7 +108,7 @@ function deletePublicKey(id) {
   </nav>
 
   <Form title="New" on:submit={handleSave}>
-    <FormGroup><TextArea labelText="Public Key" required placeholder="my public key..." bind:value={publicKey.publicKey} on:change={handlePublicKeyChange}/></FormGroup>
+    <FormGroup><TextArea labelText="Public Key" required placeholder="my public key..." bind:value={publicKey.key} on:change={handlePublicKeyChange}/></FormGroup>
     <FormGroup><TextInput labelText="Type" placeholder="ed25519..." bind:value={publicKey.type} /></FormGroup>
     <FormGroup><TextInput labelText="Name" placeholder="my computer..." bind:value={publicKey.comment} /></FormGroup>
 

@@ -2,6 +2,7 @@
 package worker
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/fatih/color"
@@ -11,11 +12,12 @@ import (
 
 type Work interface {
 	Name() string
-	Execute() error
+	Execute(context.Context) error
 }
 
 var started = false
 var queue = make(chan Work, 100)
+var ctx = context.Background()
 
 var app core.App
 
@@ -35,14 +37,24 @@ func StartWorker(application core.App) {
 
 	bold.Println("> Worker started")
 	go func() {
-		for work := range queue {
-			bold.Println("> Job started:", work.Name())
-			if err := work.Execute(); err != nil {
-				red.Println("> Worker error:", err)
+		fmt.Println("  - Waiting for jobs...")
+		for {
+			select {
+			case <-ctx.Done():
+				bold.Println("> Worker stopped")
+				return
+			case work := <-queue:
+				bold.Println("> Job started:", work.Name())
+				if err := work.Execute(context.WithoutCancel(ctx)); err != nil {
+					red.Println("> Worker error:", err)
+				}
 			}
 		}
 	}()
-	fmt.Println("  - Waiting for jobs...")
+}
+
+func StopWorker() {
+	ctx.Done()
 }
 
 func SubmitAndWait(work Work) {

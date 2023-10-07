@@ -20,8 +20,8 @@ const LOG_TO_TAG_TEXT = {
 export var row = {}
 </script>
 
-{#if row.lastLog || LOG_TO_TAG_TYPE[row.lastLog?.type]}
-  <Tag interactive type={LOG_TO_TAG_TYPE[row.lastLog?.type]} on:click={() => routeTo(`/servers/${row.id}/logs`)}>{LOG_TO_TAG_TEXT[row.lastLog?.type]}</Tag>
+{#if row.state || LOG_TO_TAG_TYPE[row.state]}
+  <Tag interactive type={LOG_TO_TAG_TYPE[row.state]} on:click={() => routeTo(`/servers/${row.id}/logs`)}>{LOG_TO_TAG_TEXT[row.state]}</Tag>
 {:else}
   <Tag type="gray">Unknown</Tag>
 {/if}

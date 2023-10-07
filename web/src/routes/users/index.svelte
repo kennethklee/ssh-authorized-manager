@@ -5,8 +5,6 @@ import {
   Toolbar,
   ToolbarContent,
   ToolbarSearch,
-  OverflowMenu,
-  OverflowMenuItem,
   Link,
 } from 'carbon-components-svelte'
 import {onMount} from 'svelte'
@@ -19,7 +17,7 @@ const headers = [
   {key: 'name', value: 'Name'},
   {key: 'email', value: 'Email'},
   {key: 'updated', value: 'Last Updated'},
-  {key: 'actions', empty: true, width: '60px'},
+  {key: 'actions', empty: true, width: '160px'},
 ]
 var users = []
 
@@ -37,9 +35,7 @@ async function refresh() {
       {#if cell.key === "updated"}
         <time datetime={formatDateTime(cell.value)}>{new Date(formatDateTime(cell.value)).toLocaleString()}</time>
       {:else if cell.key === "actions"}
-        <OverflowMenu flipped>
-          <OverflowMenuItem href={`/users/${row.id}/servers`}>Manage Servers</OverflowMenuItem>
-        </OverflowMenu>
+        <Link href={`/users/${row.id}/servers`}>Associate Servers</Link>
       {:else}
         {cell.value || 'N/A'}
       {/if}
