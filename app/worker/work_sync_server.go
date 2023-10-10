@@ -48,6 +48,20 @@ func (work *SyncServerWork) Name() string {
 	return "Sync Server - " + work.Server.GetString("name")
 }
 
+func (work *SyncServerWork) uploadAuthorizedKeys(client *goph.Client, localPath string) error {
+	ftp, err := client.NewSftp()
+	if err != nil {
+		return err
+	}
+	defer ftp.Close()
+
+	if err := ftp.MkdirAll(".ssh"); err != nil {
+		return err
+	}
+
+	return client.Upload(localPath, ".ssh/authorized_keys")
+}
+
 func (work *SyncServerWork) Execute(ctx context.Context) error {
 	// Prepare auth
 	var auth goph.Auth
@@ -79,8 +93,8 @@ func (work *SyncServerWork) Execute(ctx context.Context) error {
 	}
 	defer client.Close()
 	fmt.Println("[WORKER] Connected to", work.Server.GetString("name"))
-	// Verify hostname
 
+	// Verify hostname
 	if work.Server.GetString("hostName") != "" {
 		if _, err := verifyServerHostname(client, work.Server.GetString("hostName")); err != nil {
 			CreateServerLog(work.Server, "error", "Failed to verify hostname. Possible port redirection.", err.Error())
@@ -106,8 +120,7 @@ func (work *SyncServerWork) Execute(ctx context.Context) error {
 	// We may be able to do this better within the SSH client instead of download/upload, but this is a good start.
 	tempAuthorizedKeysFile := os.TempDir() + "/authorized_keys"
 	if err := client.Download(".ssh/authorized_keys", tempAuthorizedKeysFile); err != nil {
-		CreateServerLog(work.Server, "error", "Failed to download authorized keys. Is the file `~/.ssh/authorized_keys` missing?", err.Error())
-		return err
+		tempAuthorizedKeysFile = "/dev/null"
 	}
 	startLines, _, endLines, err := parseAuthorizedKeys(tempAuthorizedKeysFile)
 	if err != nil {
@@ -120,7 +133,11 @@ func (work *SyncServerWork) Execute(ctx context.Context) error {
 		CreateServerLog(work.Server, "error", "Failed to assemble authorized_keys file.", err.Error())
 		return err
 	}
-	client.Upload(tempAuthorizedKeysFile, ".ssh/authorized_keys")
+
+	if err := work.uploadAuthorizedKeys(client, tempAuthorizedKeysFile); err != nil {
+		CreateServerLog(work.Server, "error", "Failed to upload authorized keys.", err.Error())
+		return err
+	}
 	fmt.Println("[WORKER] Synced authorized keys")
 	CreateServerLog(work.Server, "info", "Successfully synced authorized keys", "")
 

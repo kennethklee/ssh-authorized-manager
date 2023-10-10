@@ -19,7 +19,7 @@ CMD npm ci && npm start
 
 # Build Backend
 # =============
-FROM golang:1.21.1-alpine AS gobuilder
+FROM golang:1.21.2-alpine AS gobuilder
 ARG VERSION=dev
 
 ENV PATH="/app:${PATH}"
