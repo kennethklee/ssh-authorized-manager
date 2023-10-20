@@ -29,6 +29,7 @@ var servers = []
 
 
 onMount(() => refresh($query))
+user.subscribe(() => refresh($query))
 
 /**
  * @param query {URLSearchParams}
@@ -38,9 +39,11 @@ function refresh(query) {
   // TODO if user, show owned servers
   // TODO if admin, show all servers
 
+  if (!$user) return
+
   /** @type {any} */
   var options = {}
-  if ($user.isAdmin && !query.has('all')) options = {filter: `@collection.userServers.user="${$user.id}" && @collection.userServers.server=id`}
+  if ($user.isAdmin && !query.has('all')) options = {filter: `@collection.userServers.user ?= "${$user.id}" && @collection.userServers.server ?= id`}
 
   pb.collection('servers').getFullList(200, {...options, fields: 'id,name,username,host,port,state,created,updated'})
     .then(items => servers = items)
@@ -54,7 +57,7 @@ function refresh(query) {
       {#if cell.key === "name" && $user.isAdmin}
         <Link href={'/servers/' + row.id}>{cell.value}</Link>
       {:else if cell.key === "remote"}
-        <CopyButton text={sshTarget(row)} /> {sshTarget(row)}
+        <CopyButton text={sshTarget(row)} /> <Link href="ssh://{sshTarget(row)}">{sshTarget(row)}</Link>
       {:else if cell.key === "state"}
         <LogState {row} />
       {:else if cell.key === "actions"}

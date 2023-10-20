@@ -7,8 +7,7 @@ export const query = writable(new URLSearchParams())       // url query i.e. `q`
 
 export const user = writable(null, function (set) {
   pb.authStore.model && getUserModel(pb.authStore.model).then(set)
-  pb.authStore.onChange(async (_, model) => console.log('auth change', set(await getUserModel(model))))
-
+  pb.authStore.onChange((_, model) => getUserModel(model).then(set))
   return () => { }
 })
 
@@ -20,16 +19,18 @@ async function getUserModel(model) {
   }
 
   // admin needs a user, so fetch
-  var users = await pb.collection('users').getList(1, 1, { filter: `email="${model.email}"` })
-  if (users.items.length) {
-    // user exists
-    users.items[0].isAdmin = true
-    users.items[0].isUser = true  // has servers -- user account can store server relations
-    return users.items[0]
-  } else {
-    // user doesn't exist
-    model.isAdmin = true
-    model.isUser = false // cannot have servers
-    return model
-  }
+  console.log('admin needs a user, so fetch')
+  return pb.collection('users').getFirstListItem(`email="${model.email}"`)
+    .then(user => {
+      console.log('got user', user)
+      user.isAdmin = true
+      user.isUser = true
+      return user
+    }).catch(err => {
+      console.log('user not found', err)
+      // user doesn't exist
+      model.isAdmin = true
+      model.isUser = false // cannot have servers
+      return model
+    })
 }

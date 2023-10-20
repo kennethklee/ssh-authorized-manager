@@ -90,20 +90,16 @@ tasks:
       - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml exec app go test -v ./...
       - docker compose -f docker-compose.yml -f docker-compose.${ENV}.yml exec web npm test
 
+  # release:
+  #   desc: Build and push docker image
+  #   cmds:
+  #     - docker build -t kennethkl/ssh-authorized-manager:${VERSION:-dev} -t kennethkl/ssh-authorized-manager:latest --push .
+  #     - docker push kennethkl/ssh-authorized-manager:${VERSION:-dev}
+  #     - docker tag kennethkl/ssh-authorized-manager:${VERSION:-dev} kennethkl/ssh-authorized-manager:latest
+  #     - docker push kennethkl/ssh-authorized-manager:latest
+
   release:
-    desc: Build and push docker image
+    desc: Build and push docker image for multiple architectures
     # TODO go releaser?
     cmds:
-      - docker build -t kennethkl/ssh-authorized-manager:${VERSION:-dev} -t kennethkl/ssh-authorized-manager:latest --push .
-      - docker push kennethkl/ssh-authorized-manager:${VERSION:-dev}
-      - docker tag kennethkl/ssh-authorized-manager:${VERSION:-dev} kennethkl/ssh-authorized-manager:latest
-      - docker push kennethkl/ssh-authorized-manager:latest
-
-  multi-release:
-    desc: Build and push docker image for multiple architectures
-    # TODO make work
-    cmds:
-      - docker buildx build --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t kennethkl/ssh-authorized-manager:${VERSION:-dev} -t kennethkl/ssh-authorized-manager:latest --push .
-      # - docker push kennethkl/ssh-authorized-manager:${VERSION:-dev}
-      # - docker tag kennethkl/ssh-authorized-manager:${VERSION:-dev} kennethkl/ssh-authorized-manager:latest
-      # - docker push kennethkl/ssh-authorized-manager:latest
+      - docker buildx build --platform linux/arm64,linux/amd64 -t kennethkl/ssh-authorized-manager:${VERSION:-dev} -t kennethkl/ssh-authorized-manager:latest --push .
